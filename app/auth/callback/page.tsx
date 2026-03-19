@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getCodeVerifier, clearCodeVerifier, setSession } from '@/lib/auth';
 
-export default function AuthCallbackPage() {
+function AuthCallback() {
   const router       = useRouter();
   const searchParams = useSearchParams();
   const [status, setStatus] = useState('Completing sign-in…');
@@ -53,5 +53,17 @@ export default function AuthCallbackPage() {
     <section className="mx-auto mt-16 max-w-xl rounded-2xl border border-border bg-bg-surface p-6 text-center text-text-secondary">
       {status}
     </section>
+  );
+}
+
+export default function AuthCallbackPage() {
+  return (
+    <Suspense fallback={
+      <section className="mx-auto mt-16 max-w-xl rounded-2xl border border-border bg-bg-surface p-6 text-center text-text-secondary">
+        Completing sign-in…
+      </section>
+    }>
+      <AuthCallback />
+    </Suspense>
   );
 }
