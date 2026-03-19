@@ -1,0 +1,54 @@
+import { type NextRequest, NextResponse } from 'next/server';
+
+const OAUTH_TOKEN_URL = 'https://prelive-oauth2.quran.foundation/oauth2/token';
+const CLIENT_ID       = process.env.QF_CLIENT_ID       ?? '';
+const CLIENT_SECRET   = process.env.QF_CLIENT_SECRET   ?? '';
+
+export async function POST(req: NextRequest) {
+  try {
+    const { code, codeVerifier, redirectUri } = await req.json() as {
+      code: string;
+      codeVerifier: string;
+      redirectUri: string;
+    };
+
+    const basicAuth = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64');
+
+    const res = await fetch(OAUTH_TOKEN_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type':  'application/x-www-form-urlencoded',
+        'Authorization': `Basic ${basicAuth}`,
+      },
+      body: new URLSearchParams({
+        grant_type:    'authorization_code',
+        code,
+        code_verifier: codeVerifier,
+        redirect_uri:  redirectUri,
+      }),
+      cache: 'no-store',
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      return NextResponse.json({ error: data }, { status: res.status });
+    }
+
+    /* Decode the id_token (JWT) to extract the email — no sig verification needed here */
+    let email = 'User';
+    try {
+      const payload = JSON.parse(
+        Buffer.from((data.id_token as string).split('.')[1], 'base64url').toString()
+      ) as { email?: string; sub?: string };
+      email = payload.email ?? payload.sub ?? 'User';
+    } catch { /* leave as 'User' */ }
+
+    return NextResponse.json({
+      accessToken: data.access_token as string,
+      email,
+    });
+  } catch (err) {
+    return NextResponse.json({ error: String(err) }, { status: 500 });
+  }
+}

@@ -1,0 +1,8 @@
+<svg width="640" height="220" viewBox="0 0 640 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="640" height="220" rx="28" fill="#ECFDF5"/>
+  <path d="M56 144C70 108 96 84 130 84C160 84 184 108 184 136C184 172 154 188 120 188C95 188 72 177 56 156" stroke="#047857" stroke-width="8" stroke-linecap="round"/>
+  <path d="M248 76H267V174H248V76ZM286 106H304V174H286V106ZM342 106H360V174H342V106Z" fill="#047857"/>
+  <path d="M402 156C402 130 422 110 447 110C472 110 492 130 492 156V174H473V156C473 141 462 130 447 130C433 130 421 141 421 156V174H402V156Z" fill="#047857"/>
+  <path d="M525 174V106H544V119C553 110 565 106 579 106C607 106 628 128 628 156V174H609V156C609 139 596 126 579 126C562 126 544 139 544 156V174H525Z" fill="#047857"/>
+  <text x="56" y="58" font-family="Noto Naskh Arabic, serif" font-size="34" fill="#065F46">بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ</text>
+</svg>

@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bilingual Quran Radio</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #1a1b2e;
+  --bg-surface: #222336;
+  --bg-elevated: #2a2b40;
+  --bg-hover: #2e2f47;
+  --teal: #2ec4a0;
+  --teal-dim: rgba(46,196,160,0.12);
+  --teal-border: rgba(46,196,160,0.35);
+  --blue-active: #4a90d9;
+  --blue-dim: rgba(74,144,217,0.12);
+  --blue-border: rgba(74,144,217,0.35);
+  --text-primary: #e8e8f0;
+  --text-secondary: #8888aa;
+  --text-muted: #55556a;
+  --border: rgba(255,255,255,0.07);
+  --border-hover: rgba(255,255,255,0.14);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── TOP BANNER ── */
+.top-banner {
+  background: #1a9e85;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 13px;
+  color: #fff;
+}
+.top-banner a { color: #fff; text-decoration: underline; }
+.donate-btn {
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.4);
+  border-radius: 20px;
+  color: #fff;
+  font-size: 12px;
+  padding: 4px 14px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+}
+
+/* ── HEADER ── */
+.header {
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+.logo span { color: var(--teal); }
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nav-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.15s;
+}
+.nav-btn:hover { border-color: var(--border-hover); color: var(--text-primary); }
+.nav-btn.sign-in {
+  border-color: var(--teal-border);
+  color: var(--teal);
+}
+.nav-btn.sign-in:hover { background: var(--teal-dim); }
+
+.icon-btn {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.icon-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+/* ── SURAH NAV BAR ── */
+.surah-nav {
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 44px;
+}
+
+.surah-select {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: background 0.15s;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.surah-select:hover { background: var(--bg-hover); }
+.surah-select svg { color: var(--text-muted); }
+
+.surah-meta {
+  font-size: 12px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.surah-meta span { display: flex; align-items: center; gap: 4px; }
+
+.view-toggles {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--bg-elevated);
+  border-radius: 8px;
+  padding: 3px;
+}
+.view-toggle {
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: 'Inter', sans-serif;
+  transition: all 0.15s;
+}
+.view-toggle.active {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* ── MODE BAR (bilingual controls) ── */
+.mode-bar {
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mode-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.15s;
+}
+.mode-btn:hover { border-color: var(--border-hover); color: var(--text-primary); }
+.mode-btn.active-teal { border-color: var(--teal-border); color: var(--teal); background: var(--teal-dim); }
+.mode-btn.active-blue { border-color: var(--blue-border); color: var(--blue-active); background: var(--blue-dim); }
+.mode-btn .dot { width: 6px; height: 6px; border-radius: 50%; }
+.mode-btn.active-teal .dot { background: var(--teal); animation: blink 1.2s ease-in-out infinite; }
+.mode-btn.active-blue .dot { background: var(--blue-active); animation: blink 1.2s ease-in-out infinite; }
+
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+.divider-dot {
+  width: 3px; height: 3px; border-radius: 50%;
+  background: var(--text-muted);
+}
+
+.translation-select {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.translation-select:hover { border-color: var(--border-hover); color: var(--text-primary); }
+
+/* ── MAIN CONTENT ── */
+.main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 0 160px;
+}
+.main::-webkit-scrollbar { width: 4px; }
+.main::-webkit-scrollbar-track { background: transparent; }
+.main::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+/* Surah header */
+.surah-header {
+  text-align: center;
+  padding: 32px 20px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.surah-calligraphy {
+  font-family: 'Amiri', serif;
+  font-size: 52px;
+  color: var(--text-primary);
+  direction: rtl;
+  line-height: 1.3;
+  margin-bottom: 6px;
+}
+.surah-title-en {
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.surah-badge {
+  font-size: 11px;
+  background: var(--teal-dim);
+  border: 1px solid var(--teal-border);
+  color: var(--teal);
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.surah-subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.bismillah {
+  font-family: 'Amiri', serif;
+  font-size: 30px;
+  color: var(--text-primary);
+  direction: rtl;
+  margin: 20px 0 6px;
+}
+.bismillah-en {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* ── VERSE ── */
+.verse {
+  padding: 20px 28px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.2s;
+  position: relative;
+}
+.verse:hover { background: rgba(255,255,255,0.02); }
+
+.verse.playing-arabic {
+  background: rgba(46,196,160,0.05);
+  border-left: 3px solid var(--teal);
+  padding-left: 25px;
+}
+.verse.playing-translation {
+  background: rgba(74,144,217,0.05);
+  border-left: 3px solid var(--blue-active);
+  padding-left: 25px;
+}
+.verse.done { opacity: 0.5; }
+
+/* verse controls row */
+.verse-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.verse-num {
+  font-size: 12px;
+  color: var(--text-muted);
+  min-width: 32px;
+}
+.v-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.v-btn:hover { background: var(--bg-hover); border-color: var(--border-hover); color: var(--text-primary); }
+.v-btn.playing-arabic-btn { border-color: var(--teal-border); color: var(--teal); background: var(--teal-dim); }
+.v-btn.playing-translation-btn { border-color: var(--blue-border); color: var(--blue-active); background: var(--blue-dim); }
+
+.verse-status-label {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.verse-status-label.arabic { color: var(--teal); }
+.verse-status-label.translation { color: var(--blue-active); }
+
+.v-actions { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+
+.arabic-text {
+  font-family: 'Amiri', serif;
+  font-size: 28px;
+  direction: rtl;
+  text-align: right;
+  line-height: 2;
+  color: var(--text-primary);
+  margin-bottom: 14px;
+}
+.verse.playing-arabic .arabic-text { color: #d4f5ec; }
+.verse.playing-translation .arabic-text { color: var(--text-secondary); }
+.verse.done .arabic-text { }
+
+.translation-text {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.75;
+  font-weight: 300;
+}
+.verse.playing-translation .translation-text {
+  color: #c5ddf5;
+  font-weight: 400;
+}
+
+/* tafsir tabs row */
+.verse-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-top: 14px;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+.vtab {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 4px 12px 4px 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: color 0.15s;
+  border: none;
+  background: transparent;
+  font-family: 'Inter', sans-serif;
+}
+.vtab:hover { color: var(--text-secondary); }
+.vtab-divider { color: var(--text-muted); margin-right: 12px; }
+
+/* ── BOTTOM PLAYER ── */
+.player {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border);
+  z-index: 200;
+}
+
+.player-progress {
+  height: 3px;
+  background: var(--bg-elevated);
+  cursor: pointer;
+  position: relative;
+}
+.player-progress-fill {
+  height: 100%;
+  background: var(--teal);
+  width: 8%;
+  transition: width 0.4s linear;
+}
+.player-progress:hover .player-progress-fill { background: var(--teal); }
+
+.player-body {
+  padding: 10px 20px 14px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* current verse mini display */
+.player-verse-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.player-arabic {
+  font-family: 'Amiri', serif;
+  font-size: 16px;
+  direction: rtl;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: right;
+}
+.player-en {
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.player-tag {
+  font-size: 10px;
+  padding: 1px 7px;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: fit-content;
+  margin-top: 1px;
+}
+.player-tag.ar { background: var(--teal-dim); color: var(--teal); border: 1px solid var(--teal-border); }
+.player-tag.en { background: var(--blue-dim); color: var(--blue-active); border: 1px solid var(--blue-border); }
+.player-tag .dot { width: 5px; height: 5px; border-radius: 50%; animation: blink 1.2s infinite; }
+.player-tag.ar .dot { background: var(--teal); }
+.player-tag.en .dot { background: var(--blue-active); }
+
+/* controls */
+.player-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.pc-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.pc-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+.pc-btn.main-play {
+  width: 42px;
+  height: 42px;
+  background: var(--teal);
+  color: #0a1a14;
+  border-radius: 50%;
+}
+.pc-btn.main-play:hover { background: #3dd9b3; transform: scale(1.04); }
+
+/* time */
+.player-time {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* right side controls */
+.player-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.gap-label { font-size: 11px; color: var(--text-muted); }
+.gap-slider {
+  width: 64px;
+  accent-color: var(--teal);
+  cursor: pointer;
+  height: 3px;
+}
+.speed-btn {
+  font-size: 11px;
+  color: var(--text-secondary);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 3px 8px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+}
+.speed-btn:hover { color: var(--text-primary); }
+
+/* settings cog */
+.settings-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.settings-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+/* ── SETTINGS DRAWER ── */
+.drawer-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 300;
+  align-items: flex-end;
+}
+.drawer-backdrop.open { display: flex; }
+.drawer {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: 16px 16px 0 0;
+  padding: 20px;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+}
+.drawer-handle {
+  width: 36px;
+  height: 3px;
+  background: var(--border-hover);
+  border-radius: 2px;
+  margin: 0 auto 18px;
+}
+.drawer-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 18px;
+}
+.drawer-section { margin-bottom: 16px; }
+.drawer-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.drawer-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.drawer-opt {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.15s;
+}
+.drawer-opt:hover { border-color: var(--border-hover); color: var(--text-primary); }
+.drawer-opt.active {
+  border-color: var(--teal-border);
+  color: var(--teal);
+  background: var(--teal-dim);
+}
+.drawer-close {
+  width: 100%;
+  padding: 11px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 13px;
+  cursor: pointer;
+  margin-top: 6px;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.15s;
+}
+.drawer-close:hover { background: var(--bg-hover); }
+
+@media (max-width: 600px) {
+  .surah-meta { display: none; }
+  .arabic-text { font-size: 24px; }
+  .player-verse-info { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- BANNER -->
+<div class="top-banner">
+  It's the month of the Quran. <a href="#">Help us spread its light.</a>
+  <button class="donate-btn">✦ Donate</button>
+</div>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="logo">Quran<span>.</span>com</div>
+  <div class="header-nav">
+    <button class="nav-btn sign-in">Sign in</button>
+    <button class="icon-btn">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.3"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+    </button>
+    <button class="icon-btn">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.3"/><path d="M8 4.5V8L10 10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+    </button>
+    <button class="icon-btn">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- SURAH NAV -->
+<div class="surah-nav">
+  <div class="surah-select">
+    67. Al-Mulk
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+  </div>
+  <div class="surah-meta">
+    <span>
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1.5" y="2" width="9" height="8" rx="1" stroke="currentColor" stroke-width="1"/><path d="M4 2V1M8 2V1M1.5 5h9" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
+      Page 562
+    </span>
+    <span>Juz 29 / Hizb 57</span>
+  </div>
+  <div class="view-toggles">
+    <button class="view-toggle active">Verse by Verse</button>
+    <button class="view-toggle">Reading</button>
+  </div>
+</div>
+
+<!-- MODE BAR -->
+<div class="mode-bar">
+  <button class="mode-btn" id="listenBtn" onclick="startPlayer()">
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 2.5L10 6L3 9.5V2.5Z" fill="currentColor"/></svg>
+    Listen
+  </button>
+  <div class="divider-dot"></div>
+  <button class="mode-btn active-teal" id="modeAr" onclick="setMode('arabic')">
+    <div class="dot"></div>
+    Arabic
+  </button>
+  <button class="mode-btn active-teal" id="modeBoth" onclick="setMode('both')" style="border-color:rgba(255,255,255,0.15);color:var(--text-secondary);background:transparent">
+    Both
+  </button>
+  <button class="mode-btn" id="modeEn" onclick="setMode('english')">
+    <div class="dot" style="background:var(--text-muted)"></div>
+    English
+  </button>
+  <div class="translation-select" onclick="document.querySelector('.drawer-backdrop').classList.toggle('open')">
+    Translation: Saheeh International
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- Surah header -->
+  <div class="surah-header">
+    <div class="surah-calligraphy">الملك</div>
+    <div class="surah-title-en">
+      67. Al-Mulk
+      <span class="surah-badge">info</span>
+    </div>
+    <div class="surah-subtitle">The Sovereignty</div>
+    <div class="bismillah">بِسۡمِ ٱللهِ ٱلرَّحۡمَـٰنِ ٱلرَّحِيمِ</div>
+    <div class="bismillah-en">In the Name of Allah—the Most Compassionate, Most Merciful</div>
+  </div>
+
+  <!-- Verse 1 — done -->
+  <div class="verse done" id="verse-1">
+    <div class="verse-controls">
+      <span class="verse-num">67:1</span>
+      <button class="v-btn">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2.5 1.5L8.5 5L2.5 8.5V1.5Z" fill="currentColor"/></svg>
+      </button>
+      <button class="v-btn">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 2H8.5V9L5 6.5L1.5 9V2Z" stroke="currentColor" stroke-width="1"/></svg>
+      </button>
+      <div class="v-actions">
+        <button class="v-btn">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><rect x="1" y="1" width="8" height="8" rx="1" stroke="currentColor" stroke-width="1"/><path d="M3 5h4M5 3v4" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
+        </button>
+        <button class="v-btn">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="2" cy="5" r="1.2" fill="currentColor"/><circle cx="5" cy="2" r="1.2" fill="currentColor"/><circle cx="8" cy="5" r="1.2" fill="currentColor"/><path d="M3.1 4.4L3.9 2.7M6.1 2.7L6.9 4.4" stroke="currentColor" stroke-width="0.9"/></svg>
+        </button>
+        <button class="v-btn">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 2h6v6H2z" stroke="currentColor" stroke-width="1" stroke-linecap="round"/><path d="M4 4h2M4 6h2" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
+        </button>
+        <button class="v-btn">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="1"/><circle cx="1.5" cy="5" r="1"/><circle cx="8.5" cy="5" r="1"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="arabic-text">تَبَـٰرَكَ ٱلَّذِى بِيَدِهِ ٱلْمُلْكُ وَهُوَ عَلَىٰ كُلِّ شَىْءٍ قَدِيرٌ ①</div>
+    <div class="translation-text">Glorious is He in whose hand is the Kingdom, and He is Most Powerful over everything,</div>
+    <div class="verse-tabs">
+      <button class="vtab">
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1 2h9M1 5h6M1 8h7" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
+        Tafsirs
+      </button>
+      <span class="vtab-divider">|</span>
+      <button class="vtab">
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><circle cx="5.5" cy="5.5" r="4.5" stroke="currentColor" stroke-width="1"/><path d="M5.5 3v2.5L7 7" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
+        Layers
+      </button>
+      <span class="vtab-divider">|</span>
+      <button class="vtab">Lessons</button>
+      <span class="vtab-divider">|</span>
+      <button class="vtab">Reflections</button>
+    </div>
+  </div>
+
+  <!-- Verse 2 — playing Arabic -->
+  <div class="verse playing-arabic" id="verse-2">
+    <div class="verse-controls">
+      <span class="verse-num">67:2</span>
+      <button class="v-btn playing-arabic-btn">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><rect x="2" y="1.5" width="2.5" height="7" rx="0.5" fill="currentColor"/><rect x="5.5" y="1.5" width="2.5" height="7" rx="0.5" fill="currentColor"/></svg>
+      </button>
+      <button class="v-btn">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 2H8.5V9L5 6.5L1.5 9V2Z" stroke="currentColor" stroke-width="1"/></svg>
+      </button>
+      <div class="verse-status-label arabic">
+        <div style="width:6px;height:6px;border-radius:50%;background:var(--teal);animation:blink 1.2s infinite"></div>
+        Arabic playing
+      </div>
+      <div class="v-actions">
+        <button class="v-btn">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><rect x="1" y="1" width="8" height="8" rx="1" stroke="currentColor" stroke-width="1"/><path d="M3 5h4M5 3v4" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
+        </button>
+        <button class="v-btn">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="2" cy="5" r="1.2" fill="currentColor"/><circle cx="5" cy="2" r="1.2" fill="currentColor"/><circle cx="8" cy="5" r="1.2" fill="currentColor"/></svg>
+        </button>
+        <button class="v-btn">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="1"/><circle cx="1.5" cy="5" r="1"/><circle cx="8.5" cy="5" r="1"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="arabic-text">ٱلَّذِى خَلَقَ ٱلْمَوْتَ وَٱلْحَيَوٰةَ لِيَبْلُوَكُمْ أَيُّكُمْ أَحْسَنُ عَمَلًا ۚ وَهُوَ ٱلْعَزِيزُ ٱلْغَفُورُ ②</div>
+    <div class="translation-text">Who created death and life to test which of you is best in deeds. And He is the Mighty, the Most Forgiving,</div>
+    <div class="verse-tabs">
+      <button class="vtab">
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1 2h9M1 5h6M1 8h7" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
+        Tafsirs
+      </button>
+      <span class="vtab-divider">|</span>
+      <button class="vtab">Layers</button>
+      <span class="vtab-divider">|</span>
+      <button class="vtab">Lessons</button>
+      <span class="vtab-divider">|</span>
+      <button class="vtab">Reflections</button>
+    </div>
+  </div>
+
+  <!-- Verse 3 — idle -->
+  <div class="verse" id="verse-3">
+    <div class="verse-controls">
+      <span class="verse-num">67:3</span>
+      <button class="v-btn">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2.5 1.5L8.5 5L2.5 8.5V1.5Z" fill="currentColor"/></svg>
+      </button>
+      <button class="v-btn">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 2H8.5V9L5 6.5L1.5 9V2Z" stroke="currentColor" stroke-width="1"/></svg>
+      </button>
+      <div class="v-actions">
+        <button class="v-btn">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><rect x="1" y="1" width="8" height="8" rx="1" stroke="currentColor" stroke-width="1"/><path d="M3 5h4M5 3v4" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
+        </button>
+        <button class="v-btn">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="1"/><circle cx="1.5" cy="5" r="1"/><circle cx="8.5" cy="5" r="1"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="arabic-text">ٱلَّذِى خَلَقَ سَبْعَ سَمَـٰوَٰتٍ طِبَاقًا ۖ مَّا تَرَىٰ فِى خَلْقِ ٱلرَّحْمَـٰنِ مِن تَفَـٰوُتٍ ③</div>
+    <div class="translation-text">Who created the seven heavens in layers. You will not see any inconsistency in the creation of the Most Merciful.</div>
+    <div class="verse-tabs">
+      <button class="vtab">
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1 2h9M1 5h6M1 8h7" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
+        Tafsirs
+      </button>
+      <span class="vtab-divider">|</span>
+      <button class="vtab">Layers</button>
+      <span class="vtab-divider">|</span>
+      <button class="vtab">Lessons</button>
+      <span class="vtab-divider">|</span>
+      <button class="vtab">Reflections</button>
+    </div>
+  </div>
+
+  <!-- Verse 4 -->
+  <div class="verse" id="verse-4">
+    <div class="verse-controls">
+      <span class="verse-num">67:4</span>
+      <button class="v-btn">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2.5 1.5L8.5 5L2.5 8.5V1.5Z" fill="currentColor"/></svg>
+      </button>
+      <button class="v-btn">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 2H8.5V9L5 6.5L1.5 9V2Z" stroke="currentColor" stroke-width="1"/></svg>
+      </button>
+      <div class="v-actions">
+        <button class="v-btn">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><rect x="1" y="1" width="8" height="8" rx="1" stroke="currentColor" stroke-width="1"/><path d="M3 5h4M5 3v4" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
+        </button>
+        <button class="v-btn">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="1"/><circle cx="1.5" cy="5" r="1"/><circle cx="8.5" cy="5" r="1"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="arabic-text">ثُمَّ ٱرْجِعِ ٱلْبَصَرَ كَرَّتَيْنِ يَنقَلِبْ إِلَيْكَ ٱلْبَصَرُ خَاسِئًا وَهُوَ حَسِيرٌ ④</div>
+    <div class="translation-text">Then look again and again — your sight will return humbled and worn out.</div>
+    <div class="verse-tabs">
+      <button class="vtab">
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1 2h9M1 5h6M1 8h7" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
+        Tafsirs
+      </button>
+      <span class="vtab-divider">|</span>
+      <button class="vtab">Layers</button>
+      <span class="vtab-divider">|</span>
+      <button class="vtab">Lessons</button>
+      <span class="vtab-divider">|</span>
+      <button class="vtab">Reflections</button>
+    </div>
+  </div>
+
+</main>
+
+<!-- PLAYER -->
+<div class="player">
+  <div class="player-progress" onclick="seekClick(event, this)">
+    <div class="player-progress-fill" id="progressFill" style="width:8%"></div>
+  </div>
+  <div class="player-body">
+
+    <div class="player-verse-info">
+      <div class="player-arabic">ٱلَّذِى خَلَقَ ٱلْمَوْتَ وَٱلْحَيَوٰةَ لِيَبْلُوَكُمْ</div>
+      <div class="player-en">Who created death and life to test which of you is best...</div>
+      <div class="player-tag ar" id="playerTag">
+        <div class="dot"></div>
+        67:2 · Arabic
+      </div>
+    </div>
+
+    <div class="player-controls">
+      <button class="pc-btn" title="Settings" onclick="document.querySelector('.drawer-backdrop').classList.toggle('open')">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.2"/><path d="M8 2v1.5M8 12.5V14M14 8h-1.5M3.5 8H2M12.2 3.8l-1.1 1.1M4.9 11.2L3.8 12.2M12.2 12.2l-1.1-1.1M4.9 4.8L3.8 3.8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      </button>
+      <button class="pc-btn" title="Volume">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 6H6L9 3V13L6 10H3V6Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M11 5.5C12 6.5 12 9.5 11 10.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      </button>
+      <button class="pc-btn" title="Previous" onclick="prevVerse()">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M12 4L6 9L12 14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="pc-btn main-play" id="mainPlay" onclick="togglePlay()" title="Play/Pause">
+        <svg id="playIcon" width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M6 3.5L14.5 9L6 14.5V3.5Z" fill="currentColor"/></svg>
+      </button>
+      <button class="pc-btn" title="Next" onclick="nextVerse()">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M6 4L12 9L6 14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="pc-btn" title="Forward">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M12.5 4.5L14.5 8L12.5 11.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 8H14.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <div class="player-time" id="playerTime">00:12 / 07:24</div>
+
+    <div class="player-right">
+      <span class="gap-label">Gap</span>
+      <input class="gap-slider" type="range" min="0" max="5" value="1" step="0.5" oninput="document.getElementById('gapVal').textContent=this.value+'s'">
+      <span class="gap-label" id="gapVal">1s</span>
+      <button class="speed-btn">1×</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- SETTINGS DRAWER -->
+<div class="drawer-backdrop" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="drawer">
+    <div class="drawer-handle"></div>
+    <div class="drawer-title">Player Settings</div>
+
+    <div class="drawer-section">
+      <div class="drawer-label">Reciter</div>
+      <div class="drawer-options">
+        <button class="drawer-opt active">Mishary Al-Afasy</button>
+        <button class="drawer-opt">AbdulBaset</button>
+        <button class="drawer-opt">Al-Sudais</button>
+        <button class="drawer-opt">Maher Al-Muaiqly</button>
+        <button class="drawer-opt">Hani Ar-Rifai</button>
+      </div>
+    </div>
+
+    <div class="drawer-section">
+      <div class="drawer-label">Translation</div>
+      <div class="drawer-options">
+        <button class="drawer-opt active">Saheeh International</button>
+        <button class="drawer-opt">The Clear Quran</button>
+        <button class="drawer-opt">Pickthall</button>
+        <button class="drawer-opt">Yusuf Ali</button>
+      </div>
+    </div>
+
+    <div class="drawer-section">
+      <div class="drawer-label">Playback Mode</div>
+      <div class="drawer-options">
+        <button class="drawer-opt active">Arabic → English</button>
+        <button class="drawer-opt">Arabic only</button>
+        <button class="drawer-opt">English only</button>
+      </div>
+    </div>
+
+    <div class="drawer-section">
+      <div class="drawer-label">Speed</div>
+      <div class="drawer-options">
+        <button class="drawer-opt">0.75×</button>
+        <button class="drawer-opt active">1×</button>
+        <button class="drawer-opt">1.25×</button>
+        <button class="drawer-opt">1.5×</button>
+      </div>
+    </div>
+
+    <button class="drawer-close" onclick="document.querySelector('.drawer-backdrop').classList.remove('open')">Done</button>
+  </div>
+</div>
+
+<script>
+let playing = false;
+let progress = 8;
+let interval;
+let currentVerse = 2;
+let phase = 'arabic';
+
+function togglePlay() {
+  playing = !playing;
+  const icon = document.getElementById('playIcon');
+  if (playing) {
+    icon.innerHTML = '<rect x="4" y="3" width="3.5" height="12" rx="1" fill="currentColor"/><rect x="10.5" y="3" width="3.5" height="12" rx="1" fill="currentColor"/>';
+    interval = setInterval(() => {
+      progress = Math.min(progress + 0.15, 98);
+      document.getElementById('progressFill').style.width = progress + '%';
+      const secs = Math.floor(progress * 4.44);
+      const m = Math.floor(secs/60), s = secs%60;
+      document.getElementById('playerTime').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} / 07:24`;
+    }, 100);
+    setTimeout(() => { if(playing) switchToTranslation(); }, 3500);
+  } else {
+    icon.innerHTML = '<path d="M6 3.5L14.5 9L6 14.5V3.5Z" fill="currentColor"/>';
+    clearInterval(interval);
+  }
+}
+
+function startPlayer() {
+  if (!playing) togglePlay();
+}
+
+function switchToTranslation() {
+  phase = 'translation';
+  const v = document.getElementById('verse-' + currentVerse);
+  v.classList.remove('playing-arabic');
+  v.classList.add('playing-translation');
+  const pbtn = v.querySelector('.v-btn.playing-arabic-btn');
+  if (pbtn) pbtn.classList.replace('playing-arabic-btn','playing-translation-btn');
+  const sl = v.querySelector('.verse-status-label');
+  if (sl) { sl.classList.replace('arabic','translation'); sl.innerHTML = '<div style="width:6px;height:6px;border-radius:50%;background:var(--blue-active);animation:blink 1.2s infinite"></div> English playing'; }
+  document.getElementById('progressFill').style.background = 'var(--blue-active)';
+  const tag = document.getElementById('playerTag');
+  tag.className = 'player-tag en';
+  tag.innerHTML = '<div class="dot"></div> 67:' + currentVerse + ' · English';
+}
+
+function nextVerse() {
+  const v = document.getElementById('verse-' + currentVerse);
+  v.classList.remove('playing-arabic','playing-translation');
+  v.classList.add('done');
+  const sl = v.querySelector('.verse-status-label');
+  if (sl) sl.remove();
+  const pbtn = v.querySelector('.playing-arabic-btn, .playing-translation-btn');
+  if (pbtn) { pbtn.classList.remove('playing-arabic-btn','playing-translation-btn'); pbtn.innerHTML = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2.5 1.5L8.5 5L2.5 8.5V1.5Z" fill="currentColor"/></svg>'; }
+
+  currentVerse++;
+  phase = 'arabic';
+  progress = 5;
+  document.getElementById('progressFill').style.width = '5%';
+  document.getElementById('progressFill').style.background = 'var(--teal)';
+
+  const nv = document.getElementById('verse-' + currentVerse);
+  if (nv) {
+    nv.classList.add('playing-arabic');
+    const pb = nv.querySelectorAll('.v-btn')[0];
+    if (pb) { pb.classList.add('playing-arabic-btn'); pb.innerHTML = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><rect x="2" y="1.5" width="2.5" height="7" rx="0.5" fill="currentColor"/><rect x="5.5" y="1.5" width="2.5" height="7" rx="0.5" fill="currentColor"/></svg>'; }
+    const vc = nv.querySelector('.verse-controls');
+    if (vc && !nv.querySelector('.verse-status-label')) {
+      const sl2 = document.createElement('div');
+      sl2.className = 'verse-status-label arabic';
+      sl2.innerHTML = '<div style="width:6px;height:6px;border-radius:50%;background:var(--teal);animation:blink 1.2s infinite"></div> Arabic playing';
+      vc.insertBefore(sl2, vc.querySelector('.v-actions'));
+    }
+    nv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const tag = document.getElementById('playerTag');
+    tag.className = 'player-tag ar';
+    tag.innerHTML = '<div class="dot"></div> 67:' + currentVerse + ' · Arabic';
+    const arabicLine = nv.querySelector('.arabic-text').textContent.slice(0, 40);
+    document.querySelector('.player-arabic').textContent = arabicLine + '...';
+    document.querySelector('.player-en').textContent = nv.querySelector('.translation-text').textContent.slice(0, 55) + '...';
+  }
+  if (playing) setTimeout(() => { if(playing) switchToTranslation(); }, 3500);
+}
+
+function prevVerse() {
+  if (currentVerse <= 2) return;
+  const v = document.getElementById('verse-' + currentVerse);
+  v.classList.remove('playing-arabic','playing-translation');
+  const sl = v.querySelector('.verse-status-label');
+  if (sl) sl.remove();
+  const pbtn = v.querySelector('.playing-arabic-btn, .playing-translation-btn');
+  if (pbtn) { pbtn.classList.remove('playing-arabic-btn','playing-translation-btn'); pbtn.innerHTML = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2.5 1.5L8.5 5L2.5 8.5V1.5Z" fill="currentColor"/></svg>'; }
+
+  currentVerse--;
+  const pv = document.getElementById('verse-' + currentVerse);
+  pv.classList.remove('done');
+  pv.classList.add('playing-arabic');
+  pv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  phase = 'arabic';
+  progress = 5;
+  document.getElementById('progressFill').style.width = '5%';
+  document.getElementById('progressFill').style.background = 'var(--teal)';
+  const tag = document.getElementById('playerTag');
+  tag.className = 'player-tag ar';
+  tag.innerHTML = '<div class="dot"></div> 67:' + currentVerse + ' · Arabic';
+}
+
+function setMode(m) {
+  document.querySelectorAll('.mode-btn').forEach(b => {
+    b.classList.remove('active-teal','active-blue');
+    b.style.borderColor = '';
+    b.style.color = '';
+    b.style.background = '';
+    const dot = b.querySelector('.dot');
+    if (dot) dot.style.background = 'var(--text-muted)';
+  });
+  const map = { arabic: 'modeAr', both: 'modeBoth', english: 'modeEn' };
+  const btn = document.getElementById(map[m]);
+  if (m === 'english') { btn.classList.add('active-blue'); btn.querySelector('.dot').style.background = 'var(--blue-active)'; }
+  else { btn.classList.add('active-teal'); btn.querySelector('.dot').style.background = 'var(--teal)'; }
+}
+
+function seekClick(e, bar) {
+  const rect = bar.getBoundingClientRect();
+  progress = ((e.clientX - rect.left) / rect.width) * 100;
+  document.getElementById('progressFill').style.width = progress + '%';
+}
+
+document.querySelectorAll('.drawer-opt').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const group = this.closest('.drawer-options');
+    group.querySelectorAll('.drawer-opt').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+
+document.querySelectorAll('.view-toggle').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.view-toggle').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
