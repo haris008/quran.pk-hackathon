@@ -61,9 +61,9 @@ export async function fetchTranslations(): Promise<Translation[]> {
   const data = await fetchJson<{ translations: Translation[] }>(
     `${API}/resources/translations?language=en`
   );
-  // Filter English only — other languages excluded (TTS not reliable enough for Quran)
+  // Filter English only, exclude Transliteration (romanized pronunciation, not a translation)
   const english = (data.translations ?? []).filter(
-    (t) => t.language_name === 'english'
+    (t) => t.language_name === 'english' && t.id !== 57
   );
   txListCache.set(key, english);
   return english;
