@@ -70,7 +70,6 @@ export async function loginWithPKCE(): Promise<void> {
     client_id:             CLIENT_ID,
     redirect_uri:          REDIRECT_URI,
     response_type:         'code',
-    scope:                 'openid',
     state,
     code_challenge:        challenge,
     code_challenge_method: 'S256',

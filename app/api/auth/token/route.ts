@@ -35,11 +35,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: data }, { status: res.status });
     }
 
-    /* Decode the id_token (JWT) to extract the email — no sig verification needed here */
+    /* Try to extract email from id_token or access_token (both may be JWTs) */
     let email = 'User';
+    const jwt = (data.id_token ?? data.access_token) as string | undefined;
     try {
       const payload = JSON.parse(
-        Buffer.from((data.id_token as string).split('.')[1], 'base64url').toString()
+        Buffer.from(jwt!.split('.')[1], 'base64url').toString()
       ) as { email?: string; sub?: string };
       email = payload.email ?? payload.sub ?? 'User';
     } catch { /* leave as 'User' */ }
