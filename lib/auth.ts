@@ -3,8 +3,8 @@
 const SESSION_KEY      = 'qf_session';
 const CODE_VERIFIER_KEY = 'qf_pkce_verifier';
 
-const CLIENT_ID    = process.env.NEXT_PUBLIC_QF_CLIENT_ID ?? '08825d8d-a780-4534-9f05-5716d4db2a95';
-const OAUTH_BASE   = 'https://oauth2.quran.foundation';
+const CLIENT_ID    = process.env.NEXT_PUBLIC_QF_USER_CLIENT_ID ?? '337712bc-15da-4a76-898a-ac002e867566';
+const OAUTH_BASE   = process.env.NEXT_PUBLIC_QF_OAUTH_BASE ?? 'https://prelive-oauth2.quran.foundation';
 const REDIRECT_URI = typeof window !== 'undefined'
   ? `${window.location.origin}/auth/callback`
   : 'http://localhost:3000/auth/callback';
