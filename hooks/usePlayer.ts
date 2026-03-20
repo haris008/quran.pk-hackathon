@@ -217,12 +217,17 @@ export function usePlayer({ verses, translationLang = 'english', onVerseChange, 
         utterance.rate = playbackSpeedRef.current;
         utterance.lang = 'en-US';
 
-        /* Strict male English voice — use pre-loaded ref (never empty) */
-        const enVoices = ttsVoicesRef.current.filter((v) => v.lang.startsWith('en'));
+        /* Pick best English voice — prefer male, fall back to any English voice.
+           Re-fetch voices here in case the ref was empty on first load (Safari). */
+        const voices = ttsVoicesRef.current.length
+          ? ttsVoicesRef.current
+          : (typeof window !== 'undefined' ? window.speechSynthesis.getVoices() : []);
+        const enVoices = voices.filter((v) => v.lang.startsWith('en'));
         const MALE_RE = /\b(male|david|alex|tom|daniel|mark|james|george|fred|junior|bruce|aaron|oliver|arthur|rishi|lee|richard|peter|gordon)\b/i;
         const FEMALE_RE = /\b(female|samantha|victoria|karen|susan|fiona|moira|veena|tessa|nicky|alice|kate|zoe|ava|siri|serena|helena|laura)\b/i;
         const maleVoice = enVoices.find((v) => MALE_RE.test(v.name) && !FEMALE_RE.test(v.name));
-        if (maleVoice) utterance.voice = maleVoice;
+        const selectedVoice = maleVoice ?? enVoices[0];
+        if (selectedVoice) utterance.voice = selectedVoice;
 
         /* Word-by-word highlight using onboundary charIndex */
         utterance.onboundary = (event) => {
@@ -389,6 +394,16 @@ export function usePlayer({ verses, translationLang = 'english', onVerseChange, 
       const nextIndex = clampIndex(index, versesRef.current.length);
       runIdRef.current += 1;
       const runId = runIdRef.current;
+
+      /* Unlock Web Speech API in Safari — must be called synchronously
+         inside a user-gesture handler. Speak a silent utterance then
+         cancel it immediately; this grants permission for future async calls. */
+      if (typeof window !== 'undefined' && window.speechSynthesis) {
+        const unlock = new SpeechSynthesisUtterance('');
+        unlock.volume = 0;
+        window.speechSynthesis.speak(unlock);
+        window.speechSynthesis.cancel();
+      }
 
       isPlayingRef.current = true;
       setIsPlaying(true);
