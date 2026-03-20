@@ -1,3 +1,5 @@
+import { getUserToken } from '@/lib/auth';
+
 const STREAK_KEY = 'bilingual_radio_streak';
 
 interface StreakData {
@@ -43,6 +45,7 @@ export function recordSessionToday(): number {
         data.lastActiveDate === yesterdayISO() ? data.count + 1 : 1;
       const next: StreakData = { count: newCount, lastActiveDate: today };
       localStorage.setItem(STREAK_KEY, JSON.stringify(next));
+      syncStreakToApi();
       return newCount;
     }
   } catch {
@@ -51,5 +54,20 @@ export function recordSessionToday(): number {
 
   const fresh: StreakData = { count: 1, lastActiveDate: today };
   localStorage.setItem(STREAK_KEY, JSON.stringify(fresh));
+  syncStreakToApi();
   return 1;
+}
+
+/** Fire-and-forget sync to QF Streak Tracking API. Falls back silently. */
+function syncStreakToApi(): void {
+  if (typeof window === 'undefined') return;
+  const token = getUserToken();
+  void fetch('/api/user/streaks', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { 'x-user-token': token } : {}),
+    },
+    body: JSON.stringify({ date: todayISO() }),
+  }).catch(() => {});
 }
