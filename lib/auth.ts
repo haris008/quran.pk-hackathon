@@ -3,7 +3,7 @@
 const SESSION_KEY      = 'qf_session';
 const CODE_VERIFIER_KEY = 'qf_pkce_verifier';
 
-const CLIENT_ID    = process.env.NEXT_PUBLIC_QF_CLIENT_ID ?? 'aaf8af7e-f8c8-428b-9906-8abacf96cfb9';
+const CLIENT_ID    = process.env.NEXT_PUBLIC_QF_CLIENT_ID ?? '337712bc-15da-4a76-898a-ac002e867566';
 const OAUTH_BASE   = 'https://prelive-oauth2.quran.foundation';
 const REDIRECT_URI = typeof window !== 'undefined'
   ? `${window.location.origin}/auth/callback`
