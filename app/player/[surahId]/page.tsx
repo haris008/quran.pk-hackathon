@@ -110,6 +110,7 @@ export default function PlayerPage() {
     currentTrack,
     pauseGapMs,
     playbackSpeed,
+    activeWordIndex,
     completedVerseIndexes,
     setPlayMode,
     setPauseGapMs,
@@ -465,6 +466,7 @@ export default function PlayerPage() {
                 track={index === currentVerseIndex ? currentTrack : 'idle'}
                 completed={completedVerseIndexes.includes(index)}
                 isBookmarked={bookmarkedVerseKeys.includes(verse.verseKey)}
+                activeWordIndex={index === currentVerseIndex ? activeWordIndex : -1}
                 onBookmark={onBookmark}
                 onSelect={(index) => {
                   seekToVerse(index);

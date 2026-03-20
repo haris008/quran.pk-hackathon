@@ -40,6 +40,7 @@ export function usePlayer({ verses, translationLang = 'english', onVerseChange, 
   const [pauseGapMs, setPauseGapMs] = useState(1000);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [completedVerseIndexes, setCompletedVerseIndexes] = useState<number[]>([]);
+  const [activeWordIndex, setActiveWordIndex] = useState<number>(-1);
 
   const arabicAudioRef = useRef<HTMLAudioElement | null>(null);
   const translationAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -211,6 +212,7 @@ export function usePlayer({ verses, translationLang = 'english', onVerseChange, 
 
         window.speechSynthesis.cancel();
 
+        const words = text.split(/\s+/);
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.rate = playbackSpeedRef.current;
         utterance.lang = 'en-US';
@@ -220,24 +222,38 @@ export function usePlayer({ verses, translationLang = 'english', onVerseChange, 
         const MALE_RE = /\b(male|david|alex|tom|daniel|mark|james|george|fred|junior|bruce|aaron|oliver|arthur|rishi|lee|richard|peter|gordon)\b/i;
         const FEMALE_RE = /\b(female|samantha|victoria|karen|susan|fiona|moira|veena|tessa|nicky|alice|kate|zoe|ava|siri|serena|helena|laura)\b/i;
         const maleVoice = enVoices.find((v) => MALE_RE.test(v.name) && !FEMALE_RE.test(v.name));
-        /* Only set voice if we found a confirmed male — otherwise let the browser
-           use whatever is configured (user can set system default to a male voice) */
         if (maleVoice) utterance.voice = maleVoice;
+
+        /* Word-by-word highlight using onboundary charIndex */
+        utterance.onboundary = (event) => {
+          if (event.name !== 'word') return;
+          let charCount = 0;
+          for (let wi = 0; wi < words.length; wi++) {
+            if (charCount >= event.charIndex) {
+              setActiveWordIndex(wi);
+              break;
+            }
+            charCount += (words[wi]?.length ?? 0) + 1; // +1 for space
+          }
+        };
 
         const watchdog = window.setInterval(() => {
           if (runIdRef.current !== runId || !isPlayingRef.current) {
             window.speechSynthesis.cancel();
             window.clearInterval(watchdog);
+            setActiveWordIndex(-1);
             resolve(false);
           }
         }, 100);
 
         utterance.onend = () => {
           window.clearInterval(watchdog);
+          setActiveWordIndex(-1);
           resolve(runIdRef.current === runId && isPlayingRef.current);
         };
         utterance.onerror = () => {
           window.clearInterval(watchdog);
+          setActiveWordIndex(-1);
           resolve(true); /* skip on error, don't block playback */
         };
 
@@ -460,9 +476,10 @@ export function usePlayer({ verses, translationLang = 'english', onVerseChange, 
       playMode,
       currentTrack,
       pauseGapMs,
-      playbackSpeed
+      playbackSpeed,
+      activeWordIndex,
     }),
-    [currentTrack, currentVerseIndex, isPlaying, pauseGapMs, playMode, playbackSpeed]
+    [currentTrack, currentVerseIndex, isPlaying, pauseGapMs, playMode, playbackSpeed, activeWordIndex]
   );
 
   return {

@@ -9,6 +9,7 @@ interface VerseCardProps {
   track: PlayerTrack;
   completed: boolean;
   isBookmarked?: boolean;
+  activeWordIndex?: number;
   onBookmark: (verse: Verse) => void;
   onSelect: (index: number) => void;
 }
@@ -27,6 +28,7 @@ export function VerseCard({
   track,
   completed,
   isBookmarked,
+  activeWordIndex,
   onBookmark,
   onSelect,
 }: VerseCardProps) {
@@ -113,7 +115,24 @@ export function VerseCard({
               : 'font-light text-text-secondary'
           }`}
         >
-          {verse.englishText}
+          {isTranslationPlaying && activeWordIndex !== undefined && activeWordIndex >= 0
+            ? (() => {
+                const words = verse.englishText.split(/\s+/);
+                return words.map((word, wi) => (
+                  <span
+                    key={wi}
+                    className={
+                      wi === activeWordIndex
+                        ? 'rounded bg-[rgba(74,144,217,0.25)] px-0.5 text-white transition-colors'
+                        : ''
+                    }
+                  >
+                    {word}
+                    {wi < words.length - 1 ? ' ' : ''}
+                  </span>
+                ));
+              })()
+            : verse.englishText}
         </p>
       ) : null}
     </article>
