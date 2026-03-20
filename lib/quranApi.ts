@@ -15,16 +15,16 @@ import type {
 const API       = '/api/qf';
 const AUDIO_API = '/api/v4';
 
-/* Static translation list — QF prelive has incomplete resources data */
+/* English translations — IDs from api.qurancdn.com/api/v4/resources/translations, matching quran.com */
 const STATIC_TRANSLATIONS: Translation[] = [
-  { id: 131, name: 'Saheeh International',  author_name: 'Saheeh International',  language_name: 'english', slug: 'en-sahih-international' },
-  { id: 20,  name: 'M. Pickthall',          author_name: 'Pickthall',             language_name: 'english', slug: 'en-pickthall' },
-  { id: 85,  name: 'A. Yusuf Ali',          author_name: 'Yusuf Ali',             language_name: 'english', slug: 'en-yusuf-ali' },
-  { id: 17,  name: 'Al-Hilali & Khan',      author_name: 'Hilali & Khan',         language_name: 'english', slug: 'en-hilali-khan' },
-  { id: 22,  name: 'Muhammad Asad',         author_name: 'Muhammad Asad',         language_name: 'english', slug: 'en-muhammad-asad' },
-  { id: 45,  name: 'Abul Ala Maududi',      author_name: 'Maududi',               language_name: 'english', slug: 'en-maududi' },
-  { id: 203, name: 'Ahmed Ali',             author_name: 'Ahmed Ali',             language_name: 'english', slug: 'en-ahmed-ali' },
-  { id: 95,  name: 'Wahiduddin Khan',       author_name: 'Wahiduddin Khan',       language_name: 'english', slug: 'en-wahiduddin-khan' },
+  { id: 85,  name: 'M.A.S. Abdel Haleem',         author_name: 'Abdul Haleem',              language_name: 'english', slug: 'en-haleem' },
+  { id: 84,  name: 'T. Usmani',                   author_name: 'Mufti Taqi Usmani',         language_name: 'english', slug: 'en-taqi-usmani' },
+  { id: 95,  name: 'A. Maududi (Tafhim)',          author_name: 'Sayyid Abul Ala Maududi',   language_name: 'english', slug: 'en-al-maududi' },
+  { id: 20,  name: 'Saheeh International',         author_name: 'Saheeh International',      language_name: 'english', slug: 'en-sahih-international' },
+  { id: 19,  name: 'M. Pickthall',                 author_name: 'Mohammed Pickthall',        language_name: 'english', slug: 'quran.en.pickthall' },
+  { id: 22,  name: 'A. Yusuf Ali',                 author_name: 'Abdullah Yusuf Ali',        language_name: 'english', slug: 'quran.en.yusufali' },
+  { id: 203, name: 'Al-Hilali & Khan',             author_name: 'Al-Hilali & Khan',          language_name: 'english', slug: '' },
+  { id: 149, name: "Bridges' Translation",         author_name: 'Fadel Soliman',             language_name: 'english', slug: 'bridges-translation' },
 ];
 
 /* Module-level cache — survives client-side navigations */
