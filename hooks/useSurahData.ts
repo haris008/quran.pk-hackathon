@@ -23,7 +23,7 @@ export function useSurahData() {
   const [recitations,   setRecitations]   = useState<RecitationOption[]>(FALLBACK_RECITATIONS);
   const [translations,  setTranslations]  = useState<Translation[]>([]);
   const [verses,        setVerses]        = useState<Verse[]>([]);
-  const [translationId, setTranslationId] = useState(131); /* Saheeh International */
+  const [translationId, setTranslationId] = useState(20); /* Saheeh International */
 
   const [isLoadingChapters, setIsLoadingChapters] = useState(true);
   const [isLoadingSurah,    setIsLoadingSurah]    = useState(false);

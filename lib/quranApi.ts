@@ -73,7 +73,7 @@ export async function fetchTranslations(): Promise<Translation[]> {
 
 export async function fetchVersesByChapter(
   chapterId: number,
-  translationId = 131
+  translationId = 20
 ): Promise<RawVerse[]> {
   const key = `verses-${chapterId}-${translationId}`;
   const hit = verseCache.get(key);
@@ -113,7 +113,7 @@ export async function fetchArabicAudioByChapter(
 export async function loadBilingualSurah(
   chapterId: number,
   recitationId: number,
-  translationId = 131
+  translationId = 20
 ): Promise<Verse[]> {
   const [verses, audioFiles] = await Promise.all([
     fetchVersesByChapter(chapterId, translationId),
