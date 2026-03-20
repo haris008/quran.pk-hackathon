@@ -3,20 +3,14 @@ import { getQFToken, QF_CLIENT_ID } from '@/lib/qfToken';
 
 const BASE = process.env.QF_USER_API_BASE ?? 'https://apis.quran.foundation/auth/v1';
 
-function authHeaders(userToken: string | null, appToken: string) {
-  if (userToken) {
-    return {
-      Authorization:  `Bearer ${userToken}`,
-      'x-auth-token': appToken,
-      'x-client-id':  QF_CLIENT_ID,
-      Accept:         'application/json',
-    };
-  }
-  return {
+function authHeaders(userToken: string | null, appToken: string): Record<string, string> {
+  const base: Record<string, string> = {
     'x-auth-token': appToken,
     'x-client-id':  QF_CLIENT_ID,
     Accept:         'application/json',
   };
+  if (userToken) base['Authorization'] = `Bearer ${userToken}`;
+  return base;
 }
 
 export async function GET(
