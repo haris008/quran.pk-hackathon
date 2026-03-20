@@ -3,6 +3,22 @@ import { getQFToken, QF_CLIENT_ID } from '@/lib/qfToken';
 
 const BASE = process.env.QF_USER_API_BASE ?? 'https://apis.quran.foundation/auth/v1';
 
+function authHeaders(userToken: string | null, appToken: string) {
+  if (userToken) {
+    return {
+      Authorization:  `Bearer ${userToken}`,
+      'x-auth-token': appToken,
+      'x-client-id':  QF_CLIENT_ID,
+      Accept:         'application/json',
+    };
+  }
+  return {
+    'x-auth-token': appToken,
+    'x-client-id':  QF_CLIENT_ID,
+    Accept:         'application/json',
+  };
+}
+
 export async function GET(
   req: NextRequest,
   { params }: { params: { path: string[] } }
@@ -10,15 +26,10 @@ export async function GET(
   try {
     const userToken = req.headers.get('x-user-token');
     const appToken  = await getQFToken();
-    const authToken = userToken ?? appToken;
 
     const upstream = `${BASE}/${params.path.join('/')}${req.nextUrl.search}`;
     const res = await fetch(upstream, {
-      headers: {
-        'x-auth-token': authToken,
-        'x-client-id':  QF_CLIENT_ID,
-        Accept:         'application/json',
-      },
+      headers: authHeaders(userToken, appToken),
     });
 
     const data = await res.json().catch(() => ({}));
@@ -35,19 +46,13 @@ export async function POST(
   try {
     const userToken = req.headers.get('x-user-token');
     const appToken  = await getQFToken();
-    const authToken = userToken ?? appToken;
 
     const upstream = `${BASE}/${params.path.join('/')}`;
     const body     = await req.text();
 
     const res = await fetch(upstream, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-auth-token': authToken,
-        'x-client-id':  QF_CLIENT_ID,
-        Accept:         'application/json',
-      },
+      headers: { 'Content-Type': 'application/json', ...authHeaders(userToken, appToken) },
       body,
     });
 
@@ -65,19 +70,13 @@ export async function DELETE(
   try {
     const userToken = req.headers.get('x-user-token');
     const appToken  = await getQFToken();
-    const authToken = userToken ?? appToken;
 
     const upstream = `${BASE}/${params.path.join('/')}${req.nextUrl.search}`;
     const body     = await req.text();
 
     const res = await fetch(upstream, {
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-auth-token': authToken,
-        'x-client-id':  QF_CLIENT_ID,
-        Accept:         'application/json',
-      },
+      headers: { 'Content-Type': 'application/json', ...authHeaders(userToken, appToken) },
       ...(body ? { body } : {}),
     });
 

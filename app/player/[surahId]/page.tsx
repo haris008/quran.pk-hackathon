@@ -82,17 +82,13 @@ export default function PlayerPage() {
 
     // Log completed reading session to Quran Foundation User API (fire-and-forget)
     const token = getUserToken();
-    void fetch('/api/user/reading-sessions', {
-      method:  'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { 'x-user-token': token } : {}),
-      },
-      body: JSON.stringify({
-        chapterNumber: surahId,
-        verseNumber:   verses.length,
-      }),
-    }).catch(() => {});
+    if (token) {
+      void fetch('/api/user/reading-sessions', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', 'x-user-token': token },
+        body: JSON.stringify({ chapterNumber: surahId, verseNumber: verses.length }),
+      }).catch(() => {});
+    }
 
     setSurahCompleteOpen(true);
   }, [canLoadSurah, surahId, verses.length]);
