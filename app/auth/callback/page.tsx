@@ -10,9 +10,16 @@ function AuthCallback() {
   const [status, setStatus] = useState('Completing sign-in…');
 
   useEffect(() => {
+    const error       = searchParams.get('error');
     const code        = searchParams.get('code');
     const verifier    = getCodeVerifier();
     const redirectUri = `${window.location.origin}/auth/callback`;
+
+    if (error) {
+      setStatus(`Sign-in failed: ${searchParams.get('error_description') ?? error}`);
+      setTimeout(() => router.replace('/'), 3000);
+      return;
+    }
 
     if (!code || !verifier) {
       setStatus('Sign-in failed. Missing code or verifier.');
