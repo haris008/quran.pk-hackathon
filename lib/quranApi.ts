@@ -9,31 +9,13 @@ import type {
 } from '@/types/quran';
 
 /*
- * /api/qf      → Quran Foundation authenticated API (prelive) — Arabic text, chapters, recitations
- * /api/v4      → qurancdn.com audio files — no auth needed
- * /api/alquran → alquran.cloud open mirror — English translation text
- *
- * NOTE: The QF prelive test environment has no translation data populated.
- * alquran.cloud serves the identical Saheeh International text as quran.com production.
+ * /api/qf  → Quran Foundation Content API (prelive) — Arabic text, chapters, recitations, translations
+ * /api/v4  → api.qurancdn.com/api/v4 — audio files (no auth needed)
  */
 const API       = '/api/qf';
 const AUDIO_API = '/api/v4';
-const ALQURAN   = '/api/alquran';
 
-/* Maps translation ID → alquran.cloud edition */
-const ALQURAN_EDITION: Record<number, string> = {
-  131: 'en.sahih',
-  20:  'en.pickthall',
-  85:  'en.yusufali',
-  17:  'en.hilali',
-  22:  'en.asad',
-  45:  'en.maududi',
-  57:  'en.sahih',
-  203: 'en.ahmedali',
-  95:  'en.wahiduddin',
-};
-
-/* Static translation list — QF prelive has incomplete data */
+/* Static translation list — QF prelive has incomplete resources data */
 const STATIC_TRANSLATIONS: Translation[] = [
   { id: 131, name: 'Saheeh International',  author_name: 'Saheeh International',  language_name: 'english', slug: 'en-sahih-international' },
   { id: 20,  name: 'M. Pickthall',          author_name: 'Pickthall',             language_name: 'english', slug: 'en-pickthall' },
@@ -46,10 +28,10 @@ const STATIC_TRANSLATIONS: Translation[] = [
 ];
 
 /* Module-level cache — survives client-side navigations */
-const chapterCache = new Map<string, Chapter[]>();
-const verseCache   = new Map<string, RawVerse[]>();
-const audioCache   = new Map<string, RawArabicAudioFile[]>();
-const alquranCache = new Map<string, Map<number, string>>();
+const chapterCache     = new Map<string, Chapter[]>();
+const verseCache       = new Map<string, RawVerse[]>();
+const audioCache       = new Map<string, RawArabicAudioFile[]>();
+const translationCache = new Map<string, Map<number, string>>();
 
 async function fetchJson<T>(url: string): Promise<T> {
   const response = await fetch(url, { cache: 'no-store' });
@@ -95,11 +77,7 @@ export async function fetchVersesByChapter(chapterId: number): Promise<RawVerse[
   const hit = verseCache.get(key);
   if (hit) return hit;
 
-  const params = new URLSearchParams({
-    fields:   'text_uthmani',
-    per_page: '300',
-  });
-
+  const params = new URLSearchParams({ fields: 'text_uthmani', per_page: '300' });
   const data = await fetchJson<{ verses: RawVerse[] }>(
     `${API}/verses/by_chapter/${chapterId}?${params}`
   );
@@ -107,24 +85,27 @@ export async function fetchVersesByChapter(chapterId: number): Promise<RawVerse[
   return data.verses ?? [];
 }
 
-async function fetchAlquranTranslation(
+async function fetchQFTranslation(
   chapterId: number,
-  translationId: number,
+  translationId: number
 ): Promise<Map<number, string>> {
-  const edition = ALQURAN_EDITION[translationId] ?? 'en.sahih';
-  const key = `alquran-${chapterId}-${edition}`;
-  const hit = alquranCache.get(key);
+  const key = `qf-translation-${chapterId}-${translationId}`;
+  const hit = translationCache.get(key);
   if (hit) return hit;
 
+  const params = new URLSearchParams({ per_page: '300' });
   const data = await fetchJson<{
-    data: { ayahs: Array<{ numberInSurah: number; text: string }> };
-  }>(`${ALQURAN}/surah/${chapterId}/${edition}`);
+    translations: Array<{ verse_id: number; verse_number?: number; text: string }>;
+  }>(`${API}/translations/${translationId}/${chapterId}?${params}`);
 
   const map = new Map<number, string>();
-  for (const ayah of data.data.ayahs) {
-    map.set(ayah.numberInSurah, stripHtml(ayah.text));
+  let verseNum = 1;
+  for (const t of data.translations ?? []) {
+    // API returns verse_id (global), use position order as verse number
+    map.set(t.verse_number ?? verseNum, stripHtml(t.text));
+    verseNum++;
   }
-  alquranCache.set(key, map);
+  translationCache.set(key, map);
   return map;
 }
 
@@ -153,19 +134,19 @@ export async function loadBilingualSurah(
   const [verses, audioFiles, translationMap] = await Promise.all([
     fetchVersesByChapter(chapterId),
     fetchArabicAudioByChapter(chapterId, recitationId),
-    fetchAlquranTranslation(chapterId, translationId).catch(() => new Map<number, string>()),
+    fetchQFTranslation(chapterId, translationId).catch(() => new Map<number, string>()),
   ]);
 
   const audioByKey = new Map(audioFiles.map((a) => [a.verse_key, a]));
 
-  return verses.map((verse) => {
+  return verses.map((verse, idx) => {
     const matched = audioByKey.get(verse.verse_key);
 
     return {
       verseKey:            verse.verse_key,
       verseNumber:         verse.verse_number,
       arabicText:          verse.text_uthmani,
-      englishText:         translationMap.get(verse.verse_number) ?? '',
+      englishText:         translationMap.get(verse.verse_number) ?? translationMap.get(idx + 1) ?? '',
       arabicAudioUrl:      matched ? getArabicAudioUrl(matched.url) : '',
       translationAudioUrl: getTranslationAudioUrl(chapterId, verse.verse_number),
     };
