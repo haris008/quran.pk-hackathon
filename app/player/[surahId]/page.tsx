@@ -82,13 +82,16 @@ export default function PlayerPage() {
 
     // Log completed reading session to Quran Foundation User API (fire-and-forget)
     const token = getUserToken();
-    void fetch('/api/qdc/reading_sessions', {
+    void fetch('/api/user/reading-sessions', {
       method:  'POST',
       headers: {
         'Content-Type': 'application/json',
         ...(token ? { 'x-user-token': token } : {}),
       },
-      body:    JSON.stringify({ chapter_number: surahId, verses_count: verses.length }),
+      body: JSON.stringify({
+        chapterNumber: surahId,
+        verseNumber:   verses.length,
+      }),
     }).catch(() => {});
 
     setSurahCompleteOpen(true);
@@ -123,16 +126,15 @@ export default function PlayerPage() {
     onVerseCompleted: (verse) => {
       // Log each verse completion to Quran Foundation User API (fire-and-forget)
       const token = getUserToken();
-      void fetch('/api/qdc/reading_sessions', {
+      void fetch('/api/user/reading-sessions', {
         method:  'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { 'x-user-token': token } : {}),
         },
-        body:    JSON.stringify({
-          chapter_number: surahId,
-          verse_number:   verse.verseNumber,
-          verse_key:      verse.verseKey,
+        body: JSON.stringify({
+          chapterNumber: surahId,
+          verseNumber:   verse.verseNumber,
         }),
       }).catch(() => {});
     },
