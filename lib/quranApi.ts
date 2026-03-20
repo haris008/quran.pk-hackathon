@@ -9,36 +9,21 @@ import type {
 } from '@/types/quran';
 
 /*
- * /api/qf  → Quran Foundation Content API (prelive) — Arabic text, chapters, recitations, translations
- * /api/v4  → api.qurancdn.com/api/v4 — audio files (no auth needed)
+ * All content fetched from QF authenticated Content API (apis.quran.foundation)
+ * via the /api/qf server-side proxy which adds x-auth-token + x-client-id headers.
+ * Audio mp3 files are served from audio.qurancdn.com CDN (unavoidable — it's QF's own media CDN).
  */
-const API       = '/api/qf';
-const AUDIO_API = '/api/v4';
-
-/* English translations — IDs from api.qurancdn.com/api/v4/resources/translations, matching quran.com */
-const STATIC_TRANSLATIONS: Translation[] = [
-  { id: 85,  name: 'M.A.S. Abdel Haleem',         author_name: 'Abdul Haleem',              language_name: 'english', slug: 'en-haleem' },
-  { id: 84,  name: 'T. Usmani',                   author_name: 'Mufti Taqi Usmani',         language_name: 'english', slug: 'en-taqi-usmani' },
-  { id: 95,  name: 'A. Maududi (Tafhim)',          author_name: 'Sayyid Abul Ala Maududi',   language_name: 'english', slug: 'en-al-maududi' },
-  { id: 20,  name: 'Saheeh International',         author_name: 'Saheeh International',      language_name: 'english', slug: 'en-sahih-international' },
-  { id: 19,  name: 'M. Pickthall',                 author_name: 'Mohammed Pickthall',        language_name: 'english', slug: 'quran.en.pickthall' },
-  { id: 22,  name: 'A. Yusuf Ali',                 author_name: 'Abdullah Yusuf Ali',        language_name: 'english', slug: 'quran.en.yusufali' },
-  { id: 203, name: 'Al-Hilali & Khan',             author_name: 'Al-Hilali & Khan',          language_name: 'english', slug: '' },
-  { id: 149, name: "Bridges' Translation",         author_name: 'Fadel Soliman',             language_name: 'english', slug: 'bridges-translation' },
-];
+const API = '/api/qf';
 
 /* Module-level cache — survives client-side navigations */
-const chapterCache = new Map<string, Chapter[]>();
-const verseCache   = new Map<string, RawVerse[]>();
-const audioCache   = new Map<string, RawArabicAudioFile[]>();
+const chapterCache  = new Map<string, Chapter[]>();
+const verseCache    = new Map<string, RawVerse[]>();
+const audioCache    = new Map<string, RawArabicAudioFile[]>();
+const txListCache   = new Map<string, Translation[]>();
 
 async function fetchJson<T>(url: string): Promise<T> {
   const response = await fetch(url, { cache: 'no-store' });
-
-  if (!response.ok) {
-    throw new Error(`API error ${response.status}: ${url}`);
-  }
-
+  if (!response.ok) throw new Error(`API error ${response.status}: ${url}`);
   return response.json() as Promise<T>;
 }
 
@@ -69,7 +54,19 @@ export async function fetchRecitations(language = 'en'): Promise<RecitationOptio
 }
 
 export async function fetchTranslations(): Promise<Translation[]> {
-  return STATIC_TRANSLATIONS;
+  const key = 'translations-english';
+  const hit = txListCache.get(key);
+  if (hit) return hit;
+
+  const data = await fetchJson<{ translations: Translation[] }>(
+    `${API}/resources/translations?language=en`
+  );
+  // Filter English only — other languages excluded (TTS not reliable enough for Quran)
+  const english = (data.translations ?? []).filter(
+    (t) => t.language_name === 'english'
+  );
+  txListCache.set(key, english);
+  return english;
 }
 
 export async function fetchVersesByChapter(
@@ -80,15 +77,13 @@ export async function fetchVersesByChapter(
   const hit = verseCache.get(key);
   if (hit) return hit;
 
-  // api.qurancdn.com is Quran Foundation's own production CDN (quran.com API)
-  // The prelive environment has no translation data, so we use production CDN for content
   const params = new URLSearchParams({
     translations: String(translationId),
     fields:       'text_uthmani',
     per_page:     '300',
   });
   const data = await fetchJson<{ verses: RawVerse[] }>(
-    `${AUDIO_API}/verses/by_chapter/${chapterId}?${params}`
+    `${API}/verses/by_chapter/${chapterId}?${params}`
   );
   verseCache.set(key, data.verses ?? []);
   return data.verses ?? [];
@@ -102,10 +97,8 @@ export async function fetchArabicAudioByChapter(
   const hit = audioCache.get(key);
   if (hit) return hit;
 
-  const params = new URLSearchParams({ per_page: '300' });
-
   const data = await fetchJson<{ audio_files: RawArabicAudioFile[] }>(
-    `${AUDIO_API}/recitations/${recitationId}/by_chapter/${chapterId}?${params}`
+    `${API}/recitations/${recitationId}/by_chapter/${chapterId}?per_page=300`
   );
   audioCache.set(key, data.audio_files ?? []);
   return data.audio_files ?? [];
@@ -124,7 +117,7 @@ export async function loadBilingualSurah(
   const audioByKey = new Map(audioFiles.map((a) => [a.verse_key, a]));
 
   return verses.map((verse) => {
-    const matched = audioByKey.get(verse.verse_key);
+    const matched        = audioByKey.get(verse.verse_key);
     const rawTranslation = verse.translations?.[0]?.text ?? '';
 
     return {

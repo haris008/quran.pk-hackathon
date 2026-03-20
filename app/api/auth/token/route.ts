@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-const OAUTH_TOKEN_URL = 'https://prelive-oauth2.quran.foundation/oauth2/token';
+const OAUTH_TOKEN_URL = process.env.QF_OAUTH_URL ?? 'https://oauth2.quran.foundation/oauth2/token';
 const CLIENT_ID       = process.env.QF_CLIENT_ID       ?? '';
 const CLIENT_SECRET   = process.env.QF_CLIENT_SECRET   ?? '';
 

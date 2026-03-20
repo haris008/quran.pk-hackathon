@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { getQFToken, QF_CLIENT_ID } from '@/lib/qfToken';
 
-const BASE = 'https://apis-prelive.quran.foundation/auth/v1';
+const BASE = process.env.QF_USER_API_BASE ?? 'https://apis.quran.foundation/auth/v1';
 
 export async function GET(
   req: NextRequest,
