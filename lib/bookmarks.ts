@@ -1,3 +1,5 @@
+import { getUserToken } from '@/lib/auth';
+
 const BOOKMARKS_KEY = 'bilingual_radio_bookmarks';
 
 export function getBookmarks(): string[] {
@@ -26,11 +28,24 @@ export function toggleBookmark(verseKey: string): string[] {
   }
 
   // Sync to Quran Foundation User API (fire-and-forget, silent on failure)
-  void fetch('/api/qdc/bookmarks', {
-    method:  isBookmarked ? 'DELETE' : 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify({ verse_key: verseKey }),
-  }).catch(() => {});
+  // verseKey format: "2:5" → surahNumber=2, verseNumber=5
+  if (!isBookmarked) {
+    const [surahStr, verseStr] = verseKey.split(':');
+    const token = getUserToken();
+    void fetch('/api/user/bookmarks', {
+      method:  'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'x-user-token': token } : {}),
+      },
+      body: JSON.stringify({
+        key:         Number(surahStr),
+        type:        'ayah',
+        verseNumber: Number(verseStr),
+        mushaf:      1,
+      }),
+    }).catch(() => {});
+  }
 
   return next;
 }
