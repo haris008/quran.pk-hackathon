@@ -28,10 +28,9 @@ const STATIC_TRANSLATIONS: Translation[] = [
 ];
 
 /* Module-level cache — survives client-side navigations */
-const chapterCache     = new Map<string, Chapter[]>();
-const verseCache       = new Map<string, RawVerse[]>();
-const audioCache       = new Map<string, RawArabicAudioFile[]>();
-const translationCache = new Map<string, Map<number, string>>();
+const chapterCache = new Map<string, Chapter[]>();
+const verseCache   = new Map<string, RawVerse[]>();
+const audioCache   = new Map<string, RawArabicAudioFile[]>();
 
 async function fetchJson<T>(url: string): Promise<T> {
   const response = await fetch(url, { cache: 'no-store' });
@@ -72,41 +71,26 @@ export async function fetchTranslations(): Promise<Translation[]> {
   return STATIC_TRANSLATIONS;
 }
 
-export async function fetchVersesByChapter(chapterId: number): Promise<RawVerse[]> {
-  const key = `verses-${chapterId}`;
+export async function fetchVersesByChapter(
+  chapterId: number,
+  translationId = 131
+): Promise<RawVerse[]> {
+  const key = `verses-${chapterId}-${translationId}`;
   const hit = verseCache.get(key);
   if (hit) return hit;
 
-  const params = new URLSearchParams({ fields: 'text_uthmani', per_page: '300' });
+  // api.qurancdn.com is Quran Foundation's own production CDN (quran.com API)
+  // The prelive environment has no translation data, so we use production CDN for content
+  const params = new URLSearchParams({
+    translations: String(translationId),
+    fields:       'text_uthmani',
+    per_page:     '300',
+  });
   const data = await fetchJson<{ verses: RawVerse[] }>(
-    `${API}/verses/by_chapter/${chapterId}?${params}`
+    `${AUDIO_API}/verses/by_chapter/${chapterId}?${params}`
   );
   verseCache.set(key, data.verses ?? []);
   return data.verses ?? [];
-}
-
-async function fetchQFTranslation(
-  chapterId: number,
-  translationId: number
-): Promise<Map<number, string>> {
-  const key = `qf-translation-${chapterId}-${translationId}`;
-  const hit = translationCache.get(key);
-  if (hit) return hit;
-
-  const params = new URLSearchParams({ per_page: '300' });
-  const data = await fetchJson<{
-    translations: Array<{ verse_id: number; verse_number?: number; text: string }>;
-  }>(`${API}/translations/${translationId}/${chapterId}?${params}`);
-
-  const map = new Map<number, string>();
-  let verseNum = 1;
-  for (const t of data.translations ?? []) {
-    // API returns verse_id (global), use position order as verse number
-    map.set(t.verse_number ?? verseNum, stripHtml(t.text));
-    verseNum++;
-  }
-  translationCache.set(key, map);
-  return map;
 }
 
 export async function fetchArabicAudioByChapter(
@@ -131,22 +115,22 @@ export async function loadBilingualSurah(
   recitationId: number,
   translationId = 131
 ): Promise<Verse[]> {
-  const [verses, audioFiles, translationMap] = await Promise.all([
-    fetchVersesByChapter(chapterId),
+  const [verses, audioFiles] = await Promise.all([
+    fetchVersesByChapter(chapterId, translationId),
     fetchArabicAudioByChapter(chapterId, recitationId),
-    fetchQFTranslation(chapterId, translationId).catch(() => new Map<number, string>()),
   ]);
 
   const audioByKey = new Map(audioFiles.map((a) => [a.verse_key, a]));
 
-  return verses.map((verse, idx) => {
+  return verses.map((verse) => {
     const matched = audioByKey.get(verse.verse_key);
+    const rawTranslation = verse.translations?.[0]?.text ?? '';
 
     return {
       verseKey:            verse.verse_key,
       verseNumber:         verse.verse_number,
       arabicText:          verse.text_uthmani,
-      englishText:         translationMap.get(verse.verse_number) ?? translationMap.get(idx + 1) ?? '',
+      englishText:         stripHtml(rawTranslation),
       arabicAudioUrl:      matched ? getArabicAudioUrl(matched.url) : '',
       translationAudioUrl: getTranslationAudioUrl(chapterId, verse.verse_number),
     };
