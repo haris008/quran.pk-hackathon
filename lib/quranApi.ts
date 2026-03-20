@@ -43,7 +43,8 @@ async function fetchJson<T>(url: string): Promise<T> {
 }
 
 function stripHtml(value: string): string {
-  return value.replace(/<[^>]+>/g, '').trim();
+  // Remove <sup> footnote markers entirely (including their content)
+  return value.replace(/<sup[^>]*>.*?<\/sup>/gi, '').replace(/<[^>]+>/g, '').trim();
 }
 
 export async function fetchChapters(language = 'en'): Promise<Chapter[]> {
