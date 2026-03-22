@@ -51,12 +51,6 @@ export default function HomePage() {
                 🔥 {streak} day streak
               </span>
             ) : null}
-            <button
-              type="button"
-              className="flex h-[34px] w-[34px] items-center justify-center rounded-md text-text-secondary transition hover:bg-bg-hover hover:text-text-primary"
-            >
-              ⌕
-            </button>
           </div>
         </div>
       </header>
@@ -87,18 +81,11 @@ export default function HomePage() {
           </section>
         ) : null}
 
-        {isLoadingChapters ? (
-          <section className="mx-auto w-full max-w-6xl px-4">
-            <div className="rounded-lg border border-border bg-bg-surface p-8 text-center text-sm text-text-secondary">
-              Loading Quran chapters...
-            </div>
-          </section>
-        ) : (
-          <SurahGrid
-            chapters={chapters}
-            onSelect={(id) => router.push(`/player/${id}`)}
-          />
-        )}
+        <SurahGrid
+          chapters={chapters}
+          isLoading={isLoadingChapters}
+          onSelect={(id) => router.push(`/player/${id}`)}
+        />
       </main>
     </div>
   );

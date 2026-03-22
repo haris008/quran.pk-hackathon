@@ -50,6 +50,7 @@ export function VerseCard({
         {/* Play button */}
         <button
           type="button"
+          aria-label="Play from this verse"
           onClick={() => onSelect(index)}
           title="Play from this verse"
           className={`flex h-7 w-7 items-center justify-center rounded-full border text-[10px] transition ${
@@ -66,11 +67,12 @@ export function VerseCard({
         {/* Bookmark button */}
         <button
           type="button"
+          aria-label={isBookmarked ? 'Remove bookmark' : 'Bookmark verse'}
           onClick={() => onBookmark(verse)}
-          title="Bookmark"
-          className={`flex h-7 w-7 items-center justify-center rounded-full border text-[12px] transition ${
+          title={isBookmarked ? 'Remove bookmark' : 'Bookmark'}
+          className={`flex h-7 w-7 items-center justify-center rounded-full border text-[12px] transition active:scale-125 ${
             isBookmarked
-              ? 'border-teal-border bg-teal-dim text-teal'
+              ? 'border-teal-border bg-teal-dim text-teal scale-110'
               : 'border-border text-text-secondary hover:border-border-hover hover:bg-bg-hover hover:text-text-primary'
           }`}
         >

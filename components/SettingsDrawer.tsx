@@ -89,7 +89,17 @@ export function SettingsDrawer({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mx-auto mb-4 h-[3px] w-9 rounded bg-border-hover" />
-        <h3 className="mb-4 text-[15px] font-semibold text-text-primary">Settings</h3>
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="text-[15px] font-semibold text-text-primary">Settings</h3>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close settings"
+            className="flex h-7 w-7 items-center justify-center rounded-full text-text-muted transition hover:bg-bg-hover hover:text-text-primary"
+          >
+            ✕
+          </button>
+        </div>
 
         {/* ── Reciter ── */}
         <section className="mb-4">

@@ -456,6 +456,9 @@ export function usePlayer({ verses, translationLang = 'english', onVerseChange, 
       currentVerseIndexRef.current = nextIndex;
       onVerseChange?.(nextIndex);
 
+      // Clear completed state for verses at or after the seek position
+      setCompletedVerseIndexes((prev) => prev.filter((i) => i < nextIndex));
+
       if (isPlayingRef.current) {
         startFrom(nextIndex);
       }

@@ -76,10 +76,10 @@ export function PlayerBar({
       </div>
 
       <div className="flex items-center gap-4 px-5 pb-3 pt-2">
-        {/* Verse info — hidden on small screens to save space */}
-        <div className="hidden min-w-0 flex-1 sm:block">
-          <p dir="rtl" className="font-arabic overflow-hidden text-ellipsis whitespace-nowrap text-base text-text-primary">{verse?.arabicText ?? ''}</p>
-          <p className="overflow-hidden text-ellipsis whitespace-nowrap text-[11px] text-text-secondary">{verse?.englishText ?? ''}</p>
+        {/* Verse info */}
+        <div className="min-w-0 flex-1">
+          <p dir="rtl" className="font-arabic overflow-hidden text-ellipsis whitespace-nowrap text-sm sm:text-base text-text-primary">{verse?.arabicText ?? ''}</p>
+          <p className="hidden sm:block overflow-hidden text-ellipsis whitespace-nowrap text-[11px] text-text-secondary">{verse?.englishText ?? ''}</p>
           <span className={`mt-1 inline-flex items-center gap-1 rounded px-2 py-0.5 text-[10px] ${activeTagClass}`}>
             <span className={`h-1.5 w-1.5 rounded-full animate-blink ${activeDotClass}`} />
             {verse?.verseKey ?? '--'} · {currentTrack === 'translation' ? 'English' : 'Arabic'}
@@ -88,12 +88,10 @@ export function PlayerBar({
 
         <div className="flex items-center gap-1">
           <button type="button" onClick={onOpenSettings} className="h-9 w-9 rounded-md border border-border text-sm text-text-secondary transition hover:border-border-hover hover:bg-bg-hover hover:text-text-primary">⚙</button>
-          <button type="button" className="h-9 w-9 rounded-full text-sm text-text-secondary transition hover:bg-bg-hover hover:text-text-primary">🔊</button>
           <button type="button" onClick={onRestart} title="Restart surah" className="h-9 w-9 rounded-full text-sm text-text-secondary transition hover:bg-bg-hover hover:text-text-primary">⏮</button>
           <button type="button" onClick={onPrevious} title="Previous verse" className="h-9 w-9 rounded-full text-xl leading-none text-text-secondary transition hover:bg-bg-hover hover:text-text-primary">‹</button>
           <button type="button" onClick={onPlayPause} className="h-[42px] w-[42px] rounded-full bg-teal text-sm text-[#0a1a14] transition hover:scale-[1.04] hover:bg-[#3dd9b3]">{isPlaying ? '⏸' : '▶'}</button>
           <button type="button" onClick={onNext} title="Next verse" className="h-9 w-9 rounded-full text-xl leading-none text-text-secondary transition hover:bg-bg-hover hover:text-text-primary">›</button>
-          <button type="button" onClick={onRestart} title="Skip to start" className="h-9 w-9 rounded-full text-sm text-text-secondary transition hover:bg-bg-hover hover:text-text-primary">⏭</button>
         </div>
 
         <div className="flex items-center gap-2 text-xs text-text-muted">

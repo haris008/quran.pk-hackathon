@@ -329,6 +329,8 @@ export default function PlayerPage() {
         <div className="mx-auto flex h-full w-full max-w-[1400px] items-center justify-between">
           <button
             type="button"
+            onClick={() => router.push('/')}
+            title="Browse all surahs"
             className="flex items-center gap-1.5 rounded-md px-2.5 py-1 text-sm font-medium text-text-primary transition hover:bg-bg-hover"
           >
             {selectedChapter
@@ -448,7 +450,7 @@ export default function PlayerPage() {
 
         {/* Loading / Verse list */}
         {isLoadingSurah ? (
-          <section className="px-5 py-8 text-center text-sm text-text-secondary">
+          <section className="px-5 py-8 text-center text-sm text-text-secondary animate-pulse">
             Loading verses and audio tracks…
           </section>
         ) : (

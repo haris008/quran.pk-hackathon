@@ -64,7 +64,10 @@
       "Bash(curl -s -X POST \"https://oauth2.quran.foundation/oauth2/token\" -u \"08825d8d-a780-4534-9f05-5716d4db2a95:ujuOyCviyN~x7ODoY9ma3l29Hg\" -d \"grant_type=client_credentials&scope=content\")",
       "Bash(npm show:*)",
       "Bash(curl -s \"https://api.qurancdn.com/api/qdc/resources/translations?language=en\")",
-      "Bash(curl -s \"https://registry.npmjs.org/@quranjs/api/latest\")"
+      "Bash(curl -s \"https://registry.npmjs.org/@quranjs/api/latest\")",
+      "Bash(curl -I https://audio.qurancdn.com/Ibrahim_Walk_Alafasy/001/001001.mp3)",
+      "Bash(find '/Users/haris/Desktop/Personal/Quran.com hackathon' -maxdepth 1 -name *.md -o -name *.txt -o -name *.pdf)",
+      "Bash(find '/Users/haris/Desktop/Personal/Quran.com hackathon' -not -path */node_modules/* -not -path */.next/* -not -path */.git/* -type f -o -type d)"
     ]
   }
 }

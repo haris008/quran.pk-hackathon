@@ -29,22 +29,27 @@ export function toggleBookmark(verseKey: string): string[] {
 
   // Sync to Quran Foundation User API (fire-and-forget, silent on failure)
   // verseKey format: "2:5" → surahNumber=2, verseNumber=5
-  if (!isBookmarked) {
-    const [surahStr, verseStr] = verseKey.split(':');
-    const token = getUserToken();
-    void fetch('/api/user/bookmarks', {
-      method:  'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { 'x-user-token': token } : {}),
-      },
-      body: JSON.stringify({
-        key:         Number(surahStr),
-        type:        'ayah',
-        verseNumber: Number(verseStr),
-        mushaf:      1,
-      }),
-    }).catch(() => {});
+  const [surahStr, verseStr] = verseKey.split(':');
+  const token = getUserToken();
+  if (token) {
+    if (!isBookmarked) {
+      void fetch('/api/user/bookmarks', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', 'x-user-token': token },
+        body: JSON.stringify({
+          key:         Number(surahStr),
+          type:        'ayah',
+          verseNumber: Number(verseStr),
+          mushaf:      1,
+        }),
+      }).catch(() => {});
+    } else {
+      // Remove bookmark from server
+      void fetch(`/api/user/bookmarks/${Number(surahStr)}/${Number(verseStr)}`, {
+        method:  'DELETE',
+        headers: { 'x-user-token': token },
+      }).catch(() => {});
+    }
   }
 
   return next;
