@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 import { SurahGrid } from '@/components/SurahGrid';
 import { useSurahData } from '@/hooks/useSurahData';
@@ -51,6 +52,12 @@ export default function HomePage() {
                 🔥 {streak} day streak
               </span>
             ) : null}
+            <Link
+              href="/about"
+              className="text-[13px] text-text-secondary hover:text-white transition-colors"
+            >
+              Why trust us?
+            </Link>
           </div>
         </div>
       </header>
