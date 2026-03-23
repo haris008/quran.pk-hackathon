@@ -83,9 +83,10 @@ a {
   font-family: 'Amiri Quran', 'UthmanicHafs', 'Scheherazade New', serif !important;
   direction: rtl;
   text-align: right;
-  line-height: 2.6;
+  line-height: 2.2;
   font-weight: 400;
-  font-size: 2.4rem;
+  font-size: 1.9rem;
+  letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
 }
 
