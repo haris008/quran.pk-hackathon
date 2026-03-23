@@ -58,7 +58,7 @@ const config: Config = {
       },
       fontFamily: {
         sans:   ['Figtree', 'Inter', 'sans-serif'],
-        arabic: ['UthmanicHafs', 'Scheherazade New', 'serif'],
+        arabic: ['Amiri Quran', 'UthmanicHafs', 'Scheherazade New', 'serif'],
       },
       animation: {
         blink:   'blink 1.2s ease-in-out infinite',

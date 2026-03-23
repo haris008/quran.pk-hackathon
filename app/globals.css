@@ -1,3 +1,6 @@
+/* ── Google Fonts: Amiri Quran (matches quran.com calligraphic style) ── */
+@import url('https://fonts.googleapis.com/css2?family=Amiri+Quran&display=block');
+
 /* ── Quran.com fonts (served locally to avoid CORS) ─────────── */
 @font-face {
   font-family: 'UthmanicHafs';
@@ -75,13 +78,15 @@ a {
   text-decoration: none;
 }
 
-/* Quran Arabic text — UthmanicHafs with Scheherazade fallback */
+/* Quran Arabic text — Amiri Quran matches quran.com calligraphic style */
 .font-arabic {
-  font-family: 'UthmanicHafs', 'Scheherazade New', serif !important;
+  font-family: 'Amiri Quran', 'UthmanicHafs', 'Scheherazade New', serif !important;
   direction: rtl;
   text-align: right;
-  line-height: 2.4;
+  line-height: 2.6;
   font-weight: 400;
+  font-size: 2.4rem;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* Surah name glyphs */

@@ -97,7 +97,7 @@ export function VerseCard({
       {/* ── Arabic text ── */}
       <p
         dir="rtl"
-        className={`font-arabic mb-4 text-[32px] ${
+        className={`font-arabic mb-4 ${
           isArabicPlaying
             ? 'text-white'
             : isTranslationPlaying
