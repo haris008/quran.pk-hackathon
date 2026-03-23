@@ -79,7 +79,7 @@ export async function fetchVersesByChapter(
 
   const params = new URLSearchParams({
     translations: String(translationId),
-    fields:       'text_uthmani',
+    fields:       'text_uthmani,text_qpc_hafs,page_number',
     per_page:     '300',
   });
   const data = await fetchJson<{ verses: RawVerse[] }>(
@@ -124,6 +124,8 @@ export async function loadBilingualSurah(
       verseKey:            verse.verse_key,
       verseNumber:         verse.verse_number,
       arabicText:          verse.text_uthmani,
+      qpcText:             verse.text_qpc_hafs,
+      pageNumber:          verse.page_number,
       englishText:         stripHtml(rawTranslation),
       arabicAudioUrl:      matched ? getArabicAudioUrl(matched.url) : '',
       translationAudioUrl: getTranslationAudioUrl(chapterId, verse.verse_number),

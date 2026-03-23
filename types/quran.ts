@@ -10,6 +10,8 @@ export interface Verse {
   verseKey: string;
   verseNumber: number;
   arabicText: string;
+  qpcText?: string;       // QPC Hafs glyph-encoded text (for QCF page fonts)
+  pageNumber?: number;    // Mushaf page number (determines which QCF font to load)
   englishText: string;
   arabicAudioUrl: string;
   translationAudioUrl: string;
@@ -36,6 +38,8 @@ export interface RawVerse {
   verse_key: string;
   verse_number: number;
   text_uthmani: string;
+  text_qpc_hafs?: string;
+  page_number?: number;
   translations?: Array<{ text: string }>;
 }
 

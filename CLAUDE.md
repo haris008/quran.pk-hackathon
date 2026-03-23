@@ -35,7 +35,9 @@ All QF API calls go through server-side proxies (never direct from browser) to k
 
 **`hooks/usePlayer.ts`** — The core engine (~515 lines). Runs a `runPlaybackLoop` async function that steps through `Verse[]` playing Arabic HTML audio → pause gap → English Web Speech API TTS → repeat. Exposes `activeWordIndex` (tracked via `utterance.onboundary`) for word-by-word highlighting. Call `play()` to start from current index or `seekToVerse(n)` to jump.
 
-**`components/VerseCard.tsx`** — Displays one verse. Accepts `activeWordIndex` prop; when set, renders `englishText` split into `<span>` elements with highlight on the active word.
+**`components/VerseCard.tsx`** — Displays one verse. Accepts `activeWordIndex` prop; when set, renders `englishText` split into `<span>` elements with highlight on the active word. When `verse.qpcText` + `verse.pageNumber` are present, renders Arabic with the QCF page font (see below) for authentic Mushaf quality.
+
+**`lib/qcfFont.ts`** — Dynamically injects `@font-face` rules for QCF (Quran Complex Font) per-Mushaf-page fonts. quran.com uses `p{n}-v1` fonts (e.g. `p1-v1` for Mushaf page 1) served from `/fonts/quran/hafs/v1/woff2/p{n}.woff2`. All 604 page fonts are bundled in `/public/fonts/quran/hafs/v1/woff2/`. The `text_qpc_hafs` field from the verses API contains the correct Unicode encoding for these fonts. Using QCF fonts produces the same thick, Mushaf-quality calligraphic rendering as quran.com.
 
 ### Authentication (Split Environment)
 

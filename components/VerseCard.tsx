@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from 'react';
+import { loadQcfFont, qcfFontFamily } from '@/lib/qcfFont';
 import type { PlayerTrack, Verse } from '@/types/quran';
 
 interface VerseCardProps {
@@ -34,6 +36,11 @@ export function VerseCard({
 }: VerseCardProps) {
   const isArabicPlaying = active && track === 'arabic';
   const isTranslationPlaying = active && track === 'translation';
+
+  // Load QCF page font on first render (client-side only)
+  useEffect(() => {
+    if (verse.pageNumber) loadQcfFont(verse.pageNumber);
+  }, [verse.pageNumber]);
 
   return (
     <article
@@ -104,8 +111,13 @@ export function VerseCard({
               ? 'text-text-secondary'
               : 'text-white'
         }`}
+        style={
+          verse.qpcText && verse.pageNumber
+            ? { fontFamily: qcfFontFamily(verse.pageNumber), fontSize: '2.2rem', lineHeight: '2.6' }
+            : undefined
+        }
       >
-        {verse.arabicText}
+        {verse.qpcText ?? verse.arabicText}
       </p>
 
       {/* ── Translation text ── */}
