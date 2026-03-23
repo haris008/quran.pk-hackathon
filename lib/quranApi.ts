@@ -78,9 +78,11 @@ export async function fetchVersesByChapter(
   if (hit) return hit;
 
   const params = new URLSearchParams({
-    translations: String(translationId),
-    fields:       'text_uthmani,text_qpc_hafs,page_number',
-    per_page:     '300',
+    translations:  String(translationId),
+    fields:        'text_uthmani,page_number',
+    words:         'true',
+    word_fields:   'code_v1',
+    per_page:      '300',
   });
   const data = await fetchJson<{ verses: RawVerse[] }>(
     `${API}/verses/by_chapter/${chapterId}?${params}`
@@ -120,11 +122,17 @@ export async function loadBilingualSurah(
     const matched        = audioByKey.get(verse.verse_key);
     const rawTranslation = verse.translations?.[0]?.text ?? '';
 
+    // Build QCF glyph text by joining code_v1 from each word — this gives the
+    // exact same U+FB50+ characters quran.com uses for its main verse display.
+    const qpcText = verse.words
+      ?.map((w) => w.code_v1 ?? '')
+      .join(' ') || undefined;
+
     return {
       verseKey:            verse.verse_key,
       verseNumber:         verse.verse_number,
       arabicText:          verse.text_uthmani,
-      qpcText:             verse.text_qpc_hafs,
+      qpcText,
       pageNumber:          verse.page_number,
       englishText:         stripHtml(rawTranslation),
       arabicAudioUrl:      matched ? getArabicAudioUrl(matched.url) : '',

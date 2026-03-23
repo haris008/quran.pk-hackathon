@@ -34,12 +34,17 @@ export interface Translation {
   slug: string;
 }
 
+export interface RawWord {
+  code_v1?: string;
+  char_type_name?: string;
+}
+
 export interface RawVerse {
   verse_key: string;
   verse_number: number;
   text_uthmani: string;
-  text_qpc_hafs?: string;
   page_number?: number;
+  words?: RawWord[];
   translations?: Array<{ text: string }>;
 }
 
