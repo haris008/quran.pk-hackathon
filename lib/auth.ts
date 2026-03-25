@@ -3,11 +3,13 @@
 const SESSION_KEY      = 'qf_session';
 const CODE_VERIFIER_KEY = 'qf_pkce_verifier';
 
-const CLIENT_ID    = process.env.NEXT_PUBLIC_QF_USER_CLIENT_ID ?? '337712bc-15da-4a76-898a-ac002e867566';
+const CLIENT_ID    = process.env.NEXT_PUBLIC_QF_USER_CLIENT_ID ?? 'aaf8af7e-f8c8-428b-9906-8abacf96cfb9';
 const OAUTH_BASE   = process.env.NEXT_PUBLIC_QF_OAUTH_BASE ?? 'https://prelive-oauth2.quran.foundation';
-const REDIRECT_URI = typeof window !== 'undefined'
-  ? `${window.location.origin}/auth/callback`
-  : 'http://localhost:3000/auth/callback';
+const REDIRECT_URI = process.env.NEXT_PUBLIC_REDIRECT_URI ?? (
+  typeof window !== 'undefined'
+    ? `${window.location.origin}/auth/callback`
+    : 'http://localhost:3000/auth/callback'
+);
 
 interface Session {
   accessToken: string;
@@ -65,6 +67,7 @@ export async function loginWithPKCE(): Promise<void> {
   const state      = randomBase64url(16);
 
   sessionStorage.setItem(CODE_VERIFIER_KEY, verifier);
+  sessionStorage.setItem('qf_return_url', window.location.href);
 
   const params = new URLSearchParams({
     client_id:             CLIENT_ID,

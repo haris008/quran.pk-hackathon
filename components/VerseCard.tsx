@@ -1,8 +1,21 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { loadQcfFont, qcfFontFamily } from '@/lib/qcfFont';
 import type { PlayerTrack, Verse } from '@/types/quran';
+
+function BookmarkIcon({ filled }: { filled: boolean }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-4 w-4"
+      fill={filled ? 'currentColor' : 'none'}
+      stroke={filled ? undefined : 'currentColor'}
+    >
+      <path strokeWidth={filled ? undefined : 1.5} strokeLinecap="round" strokeLinejoin="round"
+        d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z"
+      />
+    </svg>
+  );
+}
 
 interface VerseCardProps {
   verse: Verse;
@@ -36,6 +49,11 @@ export function VerseCard({
 }: VerseCardProps) {
   const isArabicPlaying = active && track === 'arabic';
   const isTranslationPlaying = active && track === 'translation';
+
+  const englishWords = useMemo(
+    () => verse.englishText?.split(/\s+/) ?? [],
+    [verse.englishText],
+  );
 
   // Load QCF page font on first render (client-side only)
   useEffect(() => {
@@ -77,13 +95,13 @@ export function VerseCard({
           aria-label={isBookmarked ? 'Remove bookmark' : 'Bookmark verse'}
           onClick={() => onBookmark(verse)}
           title={isBookmarked ? 'Remove bookmark' : 'Bookmark'}
-          className={`flex h-7 w-7 items-center justify-center rounded-full border text-[12px] transition active:scale-125 ${
+          className={`flex h-7 w-7 items-center justify-center rounded-full border transition active:scale-125 ${
             isBookmarked
               ? 'border-teal-border bg-teal-dim text-teal scale-110'
               : 'border-border text-text-secondary hover:border-border-hover hover:bg-bg-hover hover:text-text-primary'
           }`}
         >
-          🔖
+          <BookmarkIcon filled={!!isBookmarked} />
         </button>
 
         {/* Playing indicator */}
@@ -104,13 +122,7 @@ export function VerseCard({
       {/* ── Arabic text ── */}
       <p
         dir="rtl"
-        className={`font-arabic mb-4 ${
-          isArabicPlaying
-            ? 'text-white'
-            : isTranslationPlaying
-              ? 'text-text-secondary'
-              : 'text-white'
-        }`}
+        className={`font-arabic mb-4 ${isTranslationPlaying ? 'text-text-secondary' : 'text-white'}`}
         style={
           verse.qpcText && verse.pageNumber
             ? { fontFamily: qcfFontFamily(verse.pageNumber), fontSize: '2.2rem', lineHeight: '2.6' }
@@ -130,22 +142,19 @@ export function VerseCard({
           }`}
         >
           {isTranslationPlaying && activeWordIndex !== undefined && activeWordIndex >= 0
-            ? (() => {
-                const words = verse.englishText.split(/\s+/);
-                return words.map((word, wi) => (
-                  <span
-                    key={wi}
-                    className={
-                      wi === activeWordIndex
-                        ? 'rounded bg-[rgba(74,144,217,0.25)] px-0.5 text-white transition-colors'
-                        : ''
-                    }
-                  >
-                    {word}
-                    {wi < words.length - 1 ? ' ' : ''}
-                  </span>
-                ));
-              })()
+            ? englishWords.map((word, wi) => (
+                <span
+                  key={wi}
+                  className={
+                    wi === activeWordIndex
+                      ? 'rounded bg-[rgba(74,144,217,0.25)] px-0.5 text-white transition-colors'
+                      : ''
+                  }
+                >
+                  {word}
+                  {wi < englishWords.length - 1 ? ' ' : ''}
+                </span>
+              ))
             : verse.englishText}
         </p>
       ) : null}

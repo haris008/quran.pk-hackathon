@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from 'react';
+import { loadQcfFont, qcfFontFamily } from '@/lib/qcfFont';
 import type { PlayMode, PlayerTrack, Verse } from '@/types/quran';
 
 interface PlayerBarProps {
@@ -41,6 +43,10 @@ export function PlayerBar({
   onSpeedCycle,
   onOpenSettings
 }: PlayerBarProps) {
+  useEffect(() => {
+    if (verse?.pageNumber) loadQcfFont(verse.pageNumber);
+  }, [verse?.pageNumber]);
+
   const progress = totalVerses === 0 ? 0 : ((currentVerseIndex + 1) / totalVerses) * 100;
   const progressColor = currentTrack === 'translation' ? 'var(--blue-active)' : 'var(--teal)';
 
@@ -75,10 +81,20 @@ export function PlayerBar({
         <div className="h-full transition-all" style={{ width: `${progress}%`, backgroundColor: progressColor }} />
       </div>
 
-      <div className="flex items-center gap-4 px-5 pb-3 pt-2">
+      <div className="flex items-center gap-4 px-5 pb-4 pt-2">
         {/* Verse info */}
-        <div className="min-w-0 flex-1">
-          <p dir="rtl" className="font-arabic overflow-hidden text-ellipsis whitespace-nowrap text-sm sm:text-base text-text-primary">{verse?.arabicText ?? ''}</p>
+        <div className="min-w-0 flex-1 overflow-hidden">
+          <p
+            dir="rtl"
+            className="text-ellipsis whitespace-nowrap text-text-primary leading-[2.2] py-1"
+            style={
+              verse?.qpcText && verse?.pageNumber
+                ? { fontFamily: qcfFontFamily(verse.pageNumber), fontSize: '1.55rem' }
+                : { fontFamily: 'var(--font-arabic)', fontSize: '0.9375rem' }
+            }
+          >
+            {verse?.qpcText ?? verse?.arabicText ?? ''}
+          </p>
           <p className="hidden sm:block overflow-hidden text-ellipsis whitespace-nowrap text-[11px] text-text-secondary">{verse?.englishText ?? ''}</p>
           <span className={`mt-1 inline-flex items-center gap-1 rounded px-2 py-0.5 text-[10px] ${activeTagClass}`}>
             <span className={`h-1.5 w-1.5 rounded-full animate-blink ${activeDotClass}`} />

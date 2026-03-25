@@ -1,16 +1,20 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { getQFToken, QF_CLIENT_ID } from '@/lib/qfToken';
+import { getQFUserToken, QF_USER_CLIENT_ID } from '@/lib/qfToken';
 
 const BASE = process.env.QF_USER_API_BASE ?? 'https://apis.quran.foundation/auth/v1';
 
 function authHeaders(userToken: string | null, appToken: string): Record<string, string> {
-  const base: Record<string, string> = {
-    'x-auth-token': appToken,
-    'x-client-id':  QF_CLIENT_ID,
-    Accept:         'application/json',
+  const headers: Record<string, string> = {
+    'x-client-id': QF_USER_CLIENT_ID,
+    Accept:        'application/json',
   };
-  if (userToken) base['Authorization'] = `Bearer ${userToken}`;
-  return base;
+  if (userToken) {
+    // User actions: user Bearer token is sufficient; skip app token to avoid context conflict
+    headers['Authorization'] = `Bearer ${userToken}`;
+  } else {
+    headers['x-auth-token'] = appToken;
+  }
+  return headers;
 }
 
 export async function GET(
@@ -19,7 +23,7 @@ export async function GET(
 ) {
   try {
     const userToken = req.headers.get('x-user-token');
-    const appToken  = await getQFToken();
+    const appToken  = await getQFUserToken();
 
     const upstream = `${BASE}/${params.path.join('/')}${req.nextUrl.search}`;
     const res = await fetch(upstream, {
@@ -39,7 +43,7 @@ export async function POST(
 ) {
   try {
     const userToken = req.headers.get('x-user-token');
-    const appToken  = await getQFToken();
+    const appToken  = await getQFUserToken();
 
     const upstream = `${BASE}/${params.path.join('/')}`;
     const body     = await req.text();
@@ -63,7 +67,7 @@ export async function DELETE(
 ) {
   try {
     const userToken = req.headers.get('x-user-token');
-    const appToken  = await getQFToken();
+    const appToken  = await getQFUserToken();
 
     const upstream = `${BASE}/${params.path.join('/')}${req.nextUrl.search}`;
     const body     = await req.text();

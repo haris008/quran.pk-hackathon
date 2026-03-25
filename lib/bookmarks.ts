@@ -1,6 +1,6 @@
 import { getUserToken } from '@/lib/auth';
 
-const BOOKMARKS_KEY = 'bilingual_radio_bookmarks';
+export const BOOKMARKS_KEY = 'bilingual_radio_bookmarks';
 
 export function getBookmarks(): string[] {
   try {
@@ -27,7 +27,7 @@ export function toggleBookmark(verseKey: string): string[] {
     /* ignore storage errors */
   }
 
-  // Sync to Quran Foundation User API (fire-and-forget, silent on failure)
+  // Sync to Quran Foundation User API (fire-and-forget, silent — prelive quirks)
   // verseKey format: "2:5" → surahNumber=2, verseNumber=5
   const [surahStr, verseStr] = verseKey.split(':');
   const token = getUserToken();
@@ -37,14 +37,14 @@ export function toggleBookmark(verseKey: string): string[] {
         method:  'POST',
         headers: { 'Content-Type': 'application/json', 'x-user-token': token },
         body: JSON.stringify({
-          key:         Number(surahStr),
-          type:        'ayah',
-          verseNumber: Number(verseStr),
-          mushaf:      1,
+          key:            Number(surahStr),
+          type:           'ayah',
+          verseNumber:    Number(verseStr),
+          mushafId:       1,
+          lastMutationAt: new Date().toISOString(),
         }),
       }).catch(() => {});
     } else {
-      // Remove bookmark from server
       void fetch(`/api/user/bookmarks/${Number(surahStr)}/${Number(verseStr)}`, {
         method:  'DELETE',
         headers: { 'x-user-token': token },
@@ -57,4 +57,42 @@ export function toggleBookmark(verseKey: string): string[] {
 
 export function isBookmarked(verseKey: string): boolean {
   return getBookmarks().includes(verseKey);
+}
+
+export function clearBookmarks(): void {
+  try {
+    localStorage.removeItem(BOOKMARKS_KEY);
+  } catch { /* ignore */ }
+}
+
+/** Fetch bookmarks from the QF User API and restore them to localStorage. */
+export async function syncBookmarksFromAPI(token: string): Promise<string[]> {
+  try {
+    const res = await fetch('/api/user/bookmarks?mushafId=1&first=20', {
+      headers: { 'x-user-token': token },
+    });
+    if (!res.ok) return getBookmarks();
+
+    const data = await res.json() as unknown;
+
+    // Response shape: { success: true, data: [...], pagination: {...} }
+    const items: unknown[] = Array.isArray((data as { data?: unknown[] }).data)
+      ? (data as { data: unknown[] }).data
+      : Array.isArray(data) ? data : [];
+
+    const keys = items
+      .map((item) => {
+        const b = item as { key?: number; verseNumber?: number };
+        if (b.key && b.verseNumber) return `${b.key}:${b.verseNumber}`;
+        return null;
+      })
+      .filter((k): k is string => k !== null);
+
+    if (keys.length > 0) {
+      localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(keys));
+    }
+    return keys;
+  } catch {
+    return getBookmarks();
+  }
 }

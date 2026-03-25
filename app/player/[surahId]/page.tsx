@@ -10,7 +10,7 @@ import { SurahCompleteModal } from '@/components/SurahCompleteModal';
 import { VerseCard } from '@/components/VerseCard';
 import { usePlayer } from '@/hooks/usePlayer';
 import { useSurahData } from '@/hooks/useSurahData';
-import { toggleBookmark, getBookmarks } from '@/lib/bookmarks';
+import { toggleBookmark, getBookmarks, clearBookmarks, syncBookmarksFromAPI } from '@/lib/bookmarks';
 import { recordSessionToday } from '@/lib/streak';
 import { loginWithPKCE, clearSession, getSession, getUserToken } from '@/lib/auth';
 import type { Verse } from '@/types/quran';
@@ -47,9 +47,17 @@ export default function PlayerPage() {
   const [bookmarkedVerseKeys, setBookmarkedVerseKeys] = useState<string[]>([]);
   const [userEmail,           setUserEmail]          = useState<string | null>(null);
 
-  // Load auth session on mount
+  // Load auth session on mount; restore bookmarks from API if logged in
   useEffect(() => {
-    setUserEmail(getSession()?.email ?? null);
+    const session = getSession();
+    setUserEmail(session?.email ?? null);
+    if (session?.accessToken) {
+      void syncBookmarksFromAPI(session.accessToken).then((keys) => {
+        setBookmarkedVerseKeys(keys);
+      });
+    } else {
+      setBookmarkedVerseKeys(getBookmarks());
+    }
   }, []);
 
   const sessionTrackedRef = useRef(false);
@@ -197,10 +205,6 @@ export default function PlayerPage() {
     );
   }, [canLoadSurah, currentVerseIndex, surahId, verses.length]);
 
-  /* Load bookmarks from localStorage */
-  useEffect(() => {
-    setBookmarkedVerseKeys(getBookmarks());
-  }, []);
 
   /* Auto-scroll active verse into view */
   useEffect(() => {
@@ -298,15 +302,22 @@ export default function PlayerPage() {
             Quran<span className="text-teal">.</span>com
           </Link>
 
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link
+              href="/about"
+              className="hidden sm:block text-[13px] text-text-secondary hover:text-white transition-colors"
+            >
+              Why trust us?
+            </Link>
           {/* Auth button */}
           {userEmail ? (
             <div className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-teal text-[11px] font-bold text-black">
-                {userEmail[0]?.toUpperCase()}
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-teal text-black">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4"><path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clipRule="evenodd" /></svg>
               </span>
               <button
                 type="button"
-                onClick={() => { clearSession(); setUserEmail(null); }}
+                onClick={() => { clearSession(); clearBookmarks(); setBookmarkedVerseKeys([]); setUserEmail(null); }}
                 className="text-xs text-text-muted hover:text-text-secondary transition"
               >
                 Logout
@@ -321,6 +332,7 @@ export default function PlayerPage() {
               Login
             </button>
           )}
+          </div>
         </div>
       </header>
 
@@ -404,7 +416,7 @@ export default function PlayerPage() {
       </section>
 
       {/* ── Main content ── */}
-      <main className="pb-[170px]">
+      <main className="pb-[185px]">
         {/* Surah header */}
         <section className="border-b border-border px-5 py-8 text-center">
           <p className="font-surah-name text-[64px] leading-[1.2] text-text-primary">

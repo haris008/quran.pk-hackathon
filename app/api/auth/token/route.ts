@@ -12,26 +12,32 @@ export async function POST(req: NextRequest) {
       redirectUri: string;
     };
 
+    // Always send client_id in Basic auth (empty secret for public PKCE clients)
     const basicAuth = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64');
+    const headers: Record<string, string> = {
+      'Content-Type':  'application/x-www-form-urlencoded',
+      'Authorization': `Basic ${basicAuth}`,
+    };
+
+    const body = new URLSearchParams({
+      grant_type:    'authorization_code',
+      code,
+      code_verifier: codeVerifier,
+      redirect_uri:  redirectUri,
+      client_id:     CLIENT_ID,
+    });
 
     const res = await fetch(OAUTH_TOKEN_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type':  'application/x-www-form-urlencoded',
-        'Authorization': `Basic ${basicAuth}`,
-      },
-      body: new URLSearchParams({
-        grant_type:    'authorization_code',
-        code,
-        code_verifier: codeVerifier,
-        redirect_uri:  redirectUri,
-      }),
+      headers,
+      body,
       cache: 'no-store',
     });
 
     const data = await res.json();
 
     if (!res.ok) {
+      console.error('[auth/token] OAuth error', res.status, JSON.stringify(data));
       return NextResponse.json({ error: data }, { status: res.status });
     }
 
