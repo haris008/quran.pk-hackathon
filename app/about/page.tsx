@@ -118,7 +118,8 @@ const scholarVideos = [
     quote: 'The digital Mushaf must match the printed one exactly — quran.com achieves this standard.',
     duration: '6:14',
     views: '3.4M views',
-    initials: 'TU',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/1/1b/Taqi_Usmani_in_London_%282016%29.jpg',
+    facePosition: 'center 15%',
   },
   {
     scholar: 'Sheikh Assim Al-Hakeem',
@@ -126,7 +127,8 @@ const scholarVideos = [
     quote: 'The Arabic text on quran.com is identical to the printed Mushaf — I have verified this personally.',
     duration: '3:42',
     views: '1.2M views',
-    initials: 'AA',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/8/81/Assim_al_Hakeem_2024.jpg',
+    facePosition: 'center 20%',
   },
   {
     scholar: 'Mufti Menk',
@@ -134,7 +136,8 @@ const scholarVideos = [
     quote: 'I recommend quran.com to every Muslim seeking authentic Quranic recitation and text.',
     duration: '5:18',
     views: '2.8M views',
-    initials: 'MM',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/2/26/Mufti_Menk_2022_%28cropped%29.jpg',
+    facePosition: 'center 35%',
   },
 ];
 
@@ -459,13 +462,14 @@ export default function AboutPage() {
                 className="overflow-hidden rounded-xl border border-border bg-surface transition hover:border-teal-border"
               >
                 {/* Thumbnail */}
-                <div className="relative flex aspect-video items-center justify-center bg-bg-elevated">
-                  {/* Scholar initials avatar */}
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-bg-surface border border-border text-xl font-bold text-text-secondary">
-                    {v.initials}
-                  </div>
+                <div
+                  className="relative flex aspect-video items-center justify-center bg-bg-elevated bg-cover"
+                  style={{ backgroundImage: `url(${v.image})`, backgroundPosition: v.facePosition }}
+                >
+                  {/* Dark overlay */}
+                  <div className="absolute inset-0 bg-black/55" />
                   {/* Play button */}
-                  <div className="absolute flex h-12 w-12 items-center justify-center rounded-full bg-teal text-[#0a1a14] text-base shadow-lg shadow-black/40 opacity-70">
+                  <div className="relative flex h-12 w-12 items-center justify-center rounded-full bg-teal text-[#0a1a14] text-base shadow-lg shadow-black/40">
                     ▶
                   </div>
                   {/* Coming Soon pill */}
