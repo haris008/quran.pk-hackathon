@@ -10,6 +10,9 @@ export function getArabicAudioUrl(urlPath: string): string {
   if (urlPath.startsWith('http://') || urlPath.startsWith('https://')) {
     return urlPath;
   }
+  if (urlPath.startsWith('//')) {
+    return `https:${urlPath}`;
+  }
   return `https://audio.qurancdn.com/${urlPath.replace(/^\/+/, '')}`;
 }
 
