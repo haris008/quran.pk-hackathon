@@ -11,11 +11,11 @@ import {
 import type { Chapter, RecitationOption, Translation, Verse } from '@/types/quran';
 
 const FALLBACK_RECITATIONS: RecitationOption[] = [
-  { id: 7,  reciter_name: 'Mishari Rashid al-`Afasy' },
-  { id: 1,  reciter_name: 'AbdulBaset AbdulSamad', style: 'Mujawwad' },
-  { id: 3,  reciter_name: 'Abdur-Rahman as-Sudais' },
-  { id: 9,  reciter_name: 'Mohamed Siddiq al-Minshawi', style: 'Murattal' },
-  { id: 12, reciter_name: 'Mahmoud Khalil Al-Husary', style: 'Muallim' },
+  { id: 7, reciter_name: 'Mishari Rashid al-`Afasy' },
+  { id: 1, reciter_name: 'AbdulBaset AbdulSamad', style: 'Mujawwad' },
+  { id: 3, reciter_name: 'Abdur-Rahman as-Sudais' },
+  { id: 9, reciter_name: 'Mohamed Siddiq al-Minshawi', style: 'Murattal' },
+  { id: 5, reciter_name: 'Hani ar-Rifai' },
 ];
 
 export function useSurahData() {
