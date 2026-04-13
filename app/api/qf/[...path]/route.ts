@@ -1,7 +1,8 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { getQFToken, QF_CLIENT_ID } from '@/lib/qfToken';
 
-const API_BASE = process.env.QF_API_BASE ?? 'https://apis-prelive.quran.foundation/content/api/v4';
+// Keep default aligned with production content OAuth issuer.
+const API_BASE = process.env.QF_API_BASE ?? 'https://apis.quran.foundation/content/api/v4';
 
 export async function GET(
   req: NextRequest,

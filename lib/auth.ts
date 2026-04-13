@@ -73,7 +73,7 @@ export async function loginWithPKCE(): Promise<void> {
     client_id:             CLIENT_ID,
     redirect_uri:          REDIRECT_URI,
     response_type:         'code',
-    scope:                 'reading_session bookmark',
+    scope:                 'reading_session bookmark streak sync activity_day',
     state,
     code_challenge:        challenge,
     code_challenge_method: 'S256',

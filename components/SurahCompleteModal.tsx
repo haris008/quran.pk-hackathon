@@ -60,7 +60,7 @@ export function SurahCompleteModal({
           </p>
         ) : (
           <p className="mt-2 text-[14px] text-text-secondary">
-            You've reached the end of the Quran.
+            You&apos;ve reached the end of the Quran.
           </p>
         )}
 

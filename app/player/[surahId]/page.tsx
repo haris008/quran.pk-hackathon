@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 
@@ -11,11 +11,12 @@ import { VerseCard } from '@/components/VerseCard';
 import { usePlayer } from '@/hooks/usePlayer';
 import { useSurahData } from '@/hooks/useSurahData';
 import { toggleBookmark, getBookmarks, clearBookmarks, syncBookmarksFromAPI } from '@/lib/bookmarks';
-import { recordSessionToday } from '@/lib/streak';
+import { recordActivityForVerse } from '@/lib/streak';
 import { loginWithPKCE, clearSession, getSession, getUserToken } from '@/lib/auth';
 import type { Verse } from '@/types/quran';
 
 const LAST_POSITION_KEY = 'bilingual_radio_last_position';
+const SESSION_EXPIRED_EVENT = 'qf-session-expired';
 
 interface LastPosition {
   surahId: number;
@@ -60,7 +61,18 @@ export default function PlayerPage() {
     }
   }, []);
 
-  const sessionTrackedRef = useRef(false);
+  useEffect(() => {
+    const onSessionExpired = () => {
+      clearBookmarks();
+      setBookmarkedVerseKeys([]);
+      setUserEmail(null);
+    };
+
+    window.addEventListener(SESSION_EXPIRED_EVENT, onSessionExpired);
+    return () => {
+      window.removeEventListener(SESSION_EXPIRED_EVENT, onSessionExpired);
+    };
+  }, []);
 
   const selectedChapter = useMemo(
     () => chapters.find((c) => c.id === surahId),
@@ -101,12 +113,6 @@ export default function PlayerPage() {
     setSurahCompleteOpen(true);
   }, [canLoadSurah, surahId, verses.length]);
 
-  const onSessionStart = useCallback(() => {
-    if (sessionTrackedRef.current) return;
-    sessionTrackedRef.current = true;
-    recordSessionToday();
-  }, []);
-
   const {
     currentVerseIndex,
     isPlaying,
@@ -142,15 +148,12 @@ export default function PlayerPage() {
           verseNumber:   verse.verseNumber,
         }),
       }).catch(() => {});
+
+      // Activity Days powers streak progression.
+      void recordActivityForVerse(verse.verseKey);
     },
     onSurahComplete,
-    onSessionStart,
   });
-
-  /* Reset session tracker when surah changes */
-  useEffect(() => {
-    sessionTrackedRef.current = false;
-  }, [surahId, recitationId]);
 
   /* Load surah verses + audio whenever surah, reciter, or translation changes */
   useEffect(() => {
@@ -264,8 +267,16 @@ export default function PlayerPage() {
   ]);
 
   const onBookmark = useCallback((verse: Verse) => {
-    setBookmarkedVerseKeys(toggleBookmark(verse.verseKey));
-  }, []);
+    void toggleBookmark(verse.verseKey)
+      .then((keys) => {
+        setBookmarkedVerseKeys(keys);
+        setError(null);
+      })
+      .catch((err) => {
+        const message = err instanceof Error ? err.message : 'Could not update bookmark.';
+        setError(message);
+      });
+  }, [setError]);
 
   const onRetry = useCallback(() => {
     if (!canLoadSurah) return;
@@ -302,23 +313,24 @@ export default function PlayerPage() {
             Quran<span className="text-teal">.</span>com
           </Link>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3">
             <Link
               href="/about"
-              className="hidden sm:block text-[13px] text-text-secondary hover:text-white transition-colors"
+              className="inline-flex rounded-md border border-border px-2 py-0.5 text-[10px] text-text-secondary transition-colors hover:text-white sm:border-0 sm:px-0 sm:py-0 sm:text-[13px]"
             >
-              Why trust us?
+              <span className="sm:hidden">Why trust us?</span>
+              <span className="hidden sm:inline">Why trust us?</span>
             </Link>
           {/* Auth button */}
           {userEmail ? (
-            <div className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-teal text-black">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <span className="hidden h-7 w-7 items-center justify-center rounded-full bg-teal text-black sm:flex">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4"><path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clipRule="evenodd" /></svg>
               </span>
               <button
                 type="button"
                 onClick={() => { clearSession(); clearBookmarks(); setBookmarkedVerseKeys([]); setUserEmail(null); }}
-                className="text-xs text-text-muted hover:text-text-secondary transition"
+                className="text-[11px] text-text-muted transition hover:text-text-secondary sm:text-xs"
               >
                 Logout
               </button>
@@ -327,7 +339,7 @@ export default function PlayerPage() {
             <button
               type="button"
               onClick={() => void loginWithPKCE()}
-              className="rounded-md border border-border px-3 py-1 text-xs text-text-secondary transition hover:border-teal hover:text-teal"
+              className="rounded-md border border-border px-2 py-0.5 text-[11px] text-text-secondary transition hover:border-teal hover:text-teal sm:px-3 sm:py-1 sm:text-xs"
             >
               Login
             </button>

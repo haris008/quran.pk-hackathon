@@ -1,16 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 import { SurahGrid } from '@/components/SurahGrid';
 import { useSurahData } from '@/hooks/useSurahData';
-import { getStreak } from '@/lib/streak';
-import { getBookmarks, BOOKMARKS_KEY, clearBookmarks, syncBookmarksFromAPI } from '@/lib/bookmarks';
+import { fetchStreakFromAPI } from '@/lib/streak';
+import { getBookmarks, clearBookmarks, clearAllBookmarksFromAPI, syncBookmarksFromAPI } from '@/lib/bookmarks';
 import { getSession, clearSession, loginWithPKCE } from '@/lib/auth';
 
 const LAST_POSITION_KEY = 'bilingual_radio_last_position';
+const SESSION_EXPIRED_EVENT = 'qf-session-expired';
 
 interface LastPosition {
   surahId: number;
@@ -30,32 +31,44 @@ export default function HomePage() {
 
   const [lastPosition, setLastPosition] = useState<LastPosition | null>(null);
   const [streak, setStreak] = useState(0);
+  const [bookmarkKeys, setBookmarkKeys] = useState<string[]>([]);
   const [bookmarkChips, setBookmarkChips] = useState<BookmarkChip[]>([]);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  const applyLoggedOutState = useCallback(() => {
+    setUserEmail(null);
+    setStreak(0);
+    clearBookmarks();
+    setBookmarkKeys([]);
+    setBookmarkChips([]);
+  }, []);
+
+  const handleLogout = useCallback(() => {
+    clearSession();
+    applyLoggedOutState();
+  }, [applyLoggedOutState]);
 
   useEffect(() => {
     const session = getSession();
     setUserEmail(session?.email ?? null);
+    setBookmarkKeys(getBookmarks());
     // Restore bookmarks from API if logged in
     if (session?.accessToken) {
-      void syncBookmarksFromAPI(session.accessToken);
+      void syncBookmarksFromAPI(session.accessToken).then((keys) => {
+        setBookmarkKeys(keys);
+      });
     }
-    // local streak as baseline
-    setStreak(getStreak());
+    setStreak(0);
 
-    // If logged in, reconcile streak with API
+    // API-only streak source
     if (session?.accessToken) {
-      fetch('/api/user/streaks?first=10', {
-        headers: { 'x-user-token': session.accessToken },
-      })
-        .then((r) => r.json())
-        .then((data) => {
-          // Response: { success: true, data: [{ streak_count, ... }], ... }
-          const items = (data as { data?: { streak_count?: number }[] })?.data ?? [];
-          const apiCount = items[0]?.streak_count ?? 0;
-          if (apiCount > 0) setStreak(apiCount);
-        })
-        .catch(() => {});
+      void fetchStreakFromAPI(session.accessToken)
+        .then((count) => setStreak(count))
+        .catch((err) => {
+          if (err instanceof Error && err.message === 'SESSION_EXPIRED') {
+            applyLoggedOutState();
+          }
+        });
     }
 
     const raw = localStorage.getItem(LAST_POSITION_KEY);
@@ -69,19 +82,61 @@ export default function HomePage() {
     } catch {
       localStorage.removeItem(LAST_POSITION_KEY);
     }
-  }, []);
+  }, [applyLoggedOutState]);
 
-  // Build bookmark chips whenever chapters or localStorage changes
+  useEffect(() => {
+    const onSessionExpired = () => {
+      applyLoggedOutState();
+    };
+
+    window.addEventListener(SESSION_EXPIRED_EVENT, onSessionExpired);
+    return () => {
+      window.removeEventListener(SESSION_EXPIRED_EVENT, onSessionExpired);
+    };
+  }, [applyLoggedOutState]);
+
+  // Reconcile streak from API whenever tab regains focus or becomes visible.
+  useEffect(() => {
+    const refreshStreak = () => {
+      const token = getSession()?.accessToken;
+      if (!token) {
+        setStreak(0);
+        return;
+      }
+      void fetchStreakFromAPI(token)
+        .then((count) => setStreak(count))
+        .catch((err) => {
+          if (err instanceof Error && err.message === 'SESSION_EXPIRED') {
+            applyLoggedOutState();
+          }
+        });
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') refreshStreak();
+    };
+
+    window.addEventListener('focus', refreshStreak);
+    window.addEventListener('pageshow', refreshStreak);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    return () => {
+      window.removeEventListener('focus', refreshStreak);
+      window.removeEventListener('pageshow', refreshStreak);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, [applyLoggedOutState]);
+
+  // Build bookmark chips whenever chapters or bookmark keys change
   useEffect(() => {
     if (!chapters.length) return;
 
-    const keys = getBookmarks();
-    if (!keys.length) {
+    if (!bookmarkKeys.length) {
       setBookmarkChips([]);
       return;
     }
 
-    const chips: BookmarkChip[] = keys
+    const chips: BookmarkChip[] = bookmarkKeys
       .map((verseKey) => {
         const [surahIdStr, verseNumStr] = verseKey.split(':');
         const surahId = parseInt(surahIdStr, 10);
@@ -92,11 +147,18 @@ export default function HomePage() {
       })
       .filter((c): c is BookmarkChip => c !== null);
     setBookmarkChips(chips);
-  }, [chapters]);
+  }, [bookmarkKeys, chapters]);
 
   function clearAllBookmarks() {
-    localStorage.removeItem(BOOKMARKS_KEY);
-    setBookmarkChips([]);
+    const token = getSession()?.accessToken;
+    if (!token) return;
+
+    void clearAllBookmarksFromAPI(token)
+      .then(() => {
+        setBookmarkKeys([]);
+        setBookmarkChips([]);
+      })
+      .catch(() => {});
   }
 
   return (
@@ -107,27 +169,30 @@ export default function HomePage() {
             Quran<span className="text-teal">.</span>com
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3">
             {streak > 0 ? (
-              <span className="hidden sm:flex items-center gap-1 rounded-full border border-teal-border bg-teal-dim px-3 py-1 text-[12px] text-teal">
-                🔥 {streak} day streak
+              <span className="inline-flex items-center gap-1 rounded-full border border-teal-border bg-teal-dim px-2 py-0.5 text-[10px] text-teal sm:px-3 sm:py-1 sm:text-[12px]">
+                <span aria-hidden>🔥</span>
+                <span className="sm:hidden">{streak}</span>
+                <span className="hidden sm:inline">{streak} day streak</span>
               </span>
             ) : null}
             <Link
               href="/about"
-              className="hidden sm:block text-[13px] text-text-secondary hover:text-white transition-colors"
+              className="inline-flex rounded-md border border-border px-2 py-0.5 text-[10px] text-text-secondary transition-colors hover:text-white sm:border-0 sm:px-0 sm:py-0 sm:text-[13px]"
             >
-              Why trust us?
+              <span className="sm:hidden">Why trust us?</span>
+              <span className="hidden sm:inline">Why trust us?</span>
             </Link>
             {userEmail ? (
-              <div className="flex items-center gap-2">
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-teal text-black">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <span className="hidden h-7 w-7 items-center justify-center rounded-full bg-teal text-black sm:flex">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4"><path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clipRule="evenodd" /></svg>
                 </span>
                 <button
                   type="button"
-                  onClick={() => { clearSession(); clearBookmarks(); setUserEmail(null); setBookmarkChips([]); }}
-                  className="text-xs text-text-muted hover:text-text-secondary transition"
+                  onClick={handleLogout}
+                  className="text-[11px] text-text-muted transition hover:text-text-secondary sm:text-xs"
                 >
                   Logout
                 </button>
@@ -136,7 +201,7 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => void loginWithPKCE()}
-                className="rounded-md border border-border px-3 py-1 text-xs text-text-secondary transition hover:border-teal hover:text-teal"
+                className="rounded-md border border-border px-2 py-0.5 text-[11px] text-text-secondary transition hover:border-teal hover:text-teal sm:px-3 sm:py-1 sm:text-xs"
               >
                 Login
               </button>

@@ -1,6 +1,5 @@
 export const SUPPORTED_RECITER_IDS = [7, 1, 3, 9, 12] as const;
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function getTranslationAudioUrl(_chapterNumber: number, _verseNumber: number): string {
   /* No reliable English audio CDN is available — the player uses a
      text read-time delay instead (see usePlayer.ts). */

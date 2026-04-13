@@ -487,7 +487,9 @@ export default function AboutPage() {
                   <p className="font-semibold text-white text-[14px]">{v.scholar}</p>
                   <p className="mt-0.5 text-[11px] text-text-secondary">{v.title}</p>
                   <div className="mt-2 rounded-md border border-border bg-bg-elevated px-3 py-2">
-                    <p className="text-[11px] italic leading-relaxed text-text-secondary">"{v.quote}"</p>
+                    <p className="text-[11px] italic leading-relaxed text-text-secondary">
+                      &ldquo;{v.quote}&rdquo;
+                    </p>
                     <p className="mt-1.5 text-[10px] text-text-muted">⚠ Illustrative quote · not verified</p>
                   </div>
                   <p className="mt-3 text-[11px] text-text-muted">👁 {v.views}</p>

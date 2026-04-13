@@ -66,7 +66,7 @@ let userTokenCache: { value: string; expiresAt: number } | null = null;
 
 export async function getQFUserToken(): Promise<string> {
   const result = await fetchClientCredentialsToken(
-    USER_OAUTH_URL, USER_CLIENT_ID, USER_CLIENT_SECRET, 'reading_session bookmark streak', userTokenCache,
+    USER_OAUTH_URL, USER_CLIENT_ID, USER_CLIENT_SECRET, 'reading_session bookmark streak activity_day', userTokenCache,
   );
   userTokenCache = result.cache;
   return result.token;
