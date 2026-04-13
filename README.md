@@ -74,8 +74,12 @@ QF_CLIENT_ID=your_client_id
 QF_CLIENT_SECRET=your_client_secret
 QF_OAUTH_URL=https://oauth2.quran.foundation/oauth2/token
 QF_API_BASE=https://apis.quran.foundation/content/api/v4
-QF_USER_API_BASE=https://apis.quran.foundation/auth/v1
-NEXT_PUBLIC_QF_CLIENT_ID=your_client_id
+QF_USER_CLIENT_ID=your_user_client_id
+QF_USER_CLIENT_SECRET=your_user_client_secret
+QF_USER_API_BASE=https://apis-prelive.quran.foundation/auth/v1
+NEXT_PUBLIC_QF_USER_CLIENT_ID=your_user_client_id
+NEXT_PUBLIC_QF_OAUTH_BASE=https://prelive-oauth2.quran.foundation
+NEXT_PUBLIC_REDIRECT_URI=http://localhost:3000/auth/callback
 ```
 
 3. Start development server:
@@ -92,6 +96,7 @@ npm run dev
 - `/player/[surahId]` — Bilingual player
 - `/api/qf/[...path]` — Server proxy for QF Content API (adds auth headers)
 - `/api/user/[...path]` — Server proxy for QF User API (forwards user token)
+- `/about` — Authenticity & trust page (reciters, sources, translations)
 - `/api/auth/token` — OAuth2 authorization code exchange
 
 ## Auth Flow
@@ -99,7 +104,7 @@ npm run dev
 The player works fully without login (localStorage fallback for bookmarks and streak).
 
 - **Login** button initiates OAuth2 PKCE flow with scopes: `openid offline_access reading_session bookmark`
-- On callback, access token is stored in `sessionStorage`
+- On callback, access token is stored in `localStorage`
 - Authenticated requests include `x-user-token` header through the `/api/user` proxy
 
 ## Deployment
