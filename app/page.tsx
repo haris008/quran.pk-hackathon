@@ -242,7 +242,8 @@ export default function HomePage() {
                       LAST_POSITION_KEY,
                       JSON.stringify({ surahId: chip.surahId, verseIndex: chip.verseNumber - 1 }),
                     );
-                    router.push(`/player/${chip.surahId}?autoplay=1`);
+                    localStorage.setItem('bilingual_radio_autoplay', '1');
+                    router.push(`/player/${chip.surahId}`);
                   }}
                   className="shrink-0 rounded-full border border-teal-border bg-teal-dim px-3 py-1 text-[12px] text-teal hover:bg-teal transition whitespace-nowrap hover:text-bg"
                 >

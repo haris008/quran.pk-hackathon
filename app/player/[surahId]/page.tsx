@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 
 import { PlayerBar } from '@/components/PlayerBar';
 import { SettingsDrawer } from '@/components/SettingsDrawer';
@@ -16,6 +16,7 @@ import { loginWithPKCE, clearSession, getSession, getUserToken } from '@/lib/aut
 import type { Verse } from '@/types/quran';
 
 const LAST_POSITION_KEY = 'bilingual_radio_last_position';
+const AUTOPLAY_KEY     = 'bilingual_radio_autoplay';
 const SESSION_EXPIRED_EVENT = 'qf-session-expired';
 
 interface LastPosition {
@@ -26,10 +27,7 @@ interface LastPosition {
 export default function PlayerPage() {
   const router = useRouter();
   const params = useParams<{ surahId: string }>();
-  const searchParams = useSearchParams();
   const surahId = Number(params?.surahId);
-  const shouldAutoplay = searchParams.get('autoplay') === '1';
-  const didAutoplayRef = useRef(false);
 
   const {
     chapters,
@@ -199,9 +197,12 @@ export default function PlayerPage() {
       }
     }
 
-    if (shouldAutoplay && !didAutoplayRef.current) {
-      didAutoplayRef.current = true;
-      play();
+    const wantsAutoplay = localStorage.getItem(AUTOPLAY_KEY) === '1';
+    if (wantsAutoplay) {
+      localStorage.removeItem(AUTOPLAY_KEY);
+      // Small delay so seekToVerse state update settles before play() runs
+      const t = window.setTimeout(() => { play(); }, 150);
+      return () => window.clearTimeout(t);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canLoadSurah, surahId, verses.length]);
