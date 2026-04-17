@@ -29,6 +29,24 @@ export default function PlayerPage() {
   const params = useParams<{ surahId: string }>();
   const surahId = Number(params?.surahId);
 
+  // Read restore target and autoplay flag ONCE on mount into refs so they
+  // are immune to the persist-position effect overwriting localStorage later.
+  const initialPositionRef = useRef<LastPosition | null>(null);
+  const initialAutoplayRef = useRef(false);
+  if (initialPositionRef.current === null && typeof window !== 'undefined') {
+    try {
+      const raw = localStorage.getItem(LAST_POSITION_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as LastPosition;
+        if (parsed?.surahId && typeof parsed.verseIndex === 'number') {
+          initialPositionRef.current = parsed;
+        }
+      }
+    } catch { /* ignore */ }
+    initialAutoplayRef.current = localStorage.getItem(AUTOPLAY_KEY) === '1';
+    if (initialAutoplayRef.current) localStorage.removeItem(AUTOPLAY_KEY);
+  }
+
   const {
     chapters,
     recitations,
@@ -177,30 +195,21 @@ export default function PlayerPage() {
     };
   }, [canLoadSurah, loadSurah, recitationId, setError, surahId, translationId]);
 
-  /* Restore last verse position; autoplay if navigated from a bookmark */
+  /* Restore last verse position; autoplay if navigated from a bookmark.
+     Both values were captured into refs on mount so they are immune to the
+     persist-position effect overwriting localStorage while data is loading. */
   useEffect(() => {
     if (!canLoadSurah || verses.length === 0) return;
 
-    const raw = localStorage.getItem(LAST_POSITION_KEY);
-    if (raw) {
-      try {
-        const parsed = JSON.parse(raw) as LastPosition;
-        if (
-          parsed.surahId === surahId &&
-          parsed.verseIndex >= 0 &&
-          parsed.verseIndex < verses.length
-        ) {
-          seekToVerse(parsed.verseIndex);
-        }
-      } catch {
-        localStorage.removeItem(LAST_POSITION_KEY);
-      }
+    const pos = initialPositionRef.current;
+    if (pos && pos.surahId === surahId && pos.verseIndex > 0 && pos.verseIndex < verses.length) {
+      seekToVerse(pos.verseIndex);
+      initialPositionRef.current = null; // consume so it only fires once
     }
 
-    const wantsAutoplay = localStorage.getItem(AUTOPLAY_KEY) === '1';
-    if (wantsAutoplay) {
-      localStorage.removeItem(AUTOPLAY_KEY);
-      // Small delay so seekToVerse state update settles before play() runs
+    if (initialAutoplayRef.current) {
+      initialAutoplayRef.current = false; // consume
+      // Small delay lets seekToVerse's state update settle before play() runs
       const t = window.setTimeout(() => { play(); }, 150);
       return () => window.clearTimeout(t);
     }
