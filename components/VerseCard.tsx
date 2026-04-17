@@ -23,10 +23,12 @@ interface VerseCardProps {
   active: boolean;
   track: PlayerTrack;
   completed: boolean;
+  isPlaying?: boolean;
   isBookmarked?: boolean;
   activeWordIndex?: number;
   onBookmark: (verse: Verse) => void;
   onSelect: (index: number) => void;
+  onPause: () => void;
 }
 
 function getStateClasses(active: boolean, track: PlayerTrack, completed: boolean): string {
@@ -42,13 +44,16 @@ export function VerseCard({
   active,
   track,
   completed,
+  isPlaying,
   isBookmarked,
   activeWordIndex,
   onBookmark,
   onSelect,
+  onPause,
 }: VerseCardProps) {
   const isArabicPlaying = active && track === 'arabic';
   const isTranslationPlaying = active && track === 'translation';
+  const isActivelyPlaying = active && !!isPlaying && track !== 'idle';
 
   const englishWords = useMemo(
     () => verse.englishText?.split(/\s+/) ?? [],
@@ -72,12 +77,12 @@ export function VerseCard({
           {verse.verseKey}
         </span>
 
-        {/* Play button */}
+        {/* Play / Pause button */}
         <button
           type="button"
-          aria-label="Play from this verse"
-          onClick={() => onSelect(index)}
-          title="Play from this verse"
+          aria-label={isActivelyPlaying ? 'Pause' : 'Play from this verse'}
+          onClick={() => isActivelyPlaying ? onPause() : onSelect(index)}
+          title={isActivelyPlaying ? 'Pause' : 'Play from this verse'}
           className={`flex h-7 w-7 items-center justify-center rounded-full border text-[10px] transition ${
             isArabicPlaying
               ? 'border-teal-border bg-teal-dim text-teal'
@@ -86,7 +91,7 @@ export function VerseCard({
                 : 'border-border text-text-secondary hover:border-border-hover hover:bg-bg-hover hover:text-text-primary'
           }`}
         >
-          ▶
+          {isActivelyPlaying ? '⏸' : '▶'}
         </button>
 
         {/* Bookmark button */}

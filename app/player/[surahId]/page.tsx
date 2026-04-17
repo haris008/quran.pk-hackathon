@@ -494,9 +494,11 @@ export default function PlayerPage() {
                 active={index === currentVerseIndex}
                 track={index === currentVerseIndex ? currentTrack : 'idle'}
                 completed={completedVerseIndexes.includes(index)}
+                isPlaying={isPlaying}
                 isBookmarked={bookmarkedVerseKeys.includes(verse.verseKey)}
                 activeWordIndex={index === currentVerseIndex ? activeWordIndex : -1}
                 onBookmark={onBookmark}
+                onPause={pause}
                 onSelect={(index) => {
                   seekToVerse(index);
                   if (!isPlaying) play();
