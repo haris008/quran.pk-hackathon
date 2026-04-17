@@ -146,6 +146,7 @@ export default function PlayerPage() {
     setPlaybackSpeed,
     play,
     pause,
+    startFrom,
     seekToVerse,
     nextVerse,
     previousVerse,
@@ -197,20 +198,34 @@ export default function PlayerPage() {
 
   /* Restore last verse position; autoplay if navigated from a bookmark.
      Both values were captured into refs on mount so they are immune to the
-     persist-position effect overwriting localStorage while data is loading. */
+     persist-position effect overwriting localStorage while data is loading.
+     We call startFrom(targetIndex) directly — passing the index explicitly —
+     so there is no race where currentVerseIndexRef gets reset between seekToVerse
+     and a delayed play() call. */
   useEffect(() => {
     if (!canLoadSurah || verses.length === 0) return;
 
+    // Consume both flags immediately so re-runs of this effect are no-ops.
     const pos = initialPositionRef.current;
-    if (pos && pos.surahId === surahId && pos.verseIndex > 0 && pos.verseIndex < verses.length) {
-      seekToVerse(pos.verseIndex);
-      initialPositionRef.current = null; // consume so it only fires once
+    const shouldAutoplay = initialAutoplayRef.current;
+    initialPositionRef.current = null;
+    initialAutoplayRef.current = false;
+
+    const targetIndex =
+      pos && pos.surahId === surahId && pos.verseIndex >= 0 && pos.verseIndex < verses.length
+        ? pos.verseIndex
+        : null;
+
+    if (targetIndex !== null && !shouldAutoplay) {
+      // Bookmark restored without autoplay — just scroll to the verse
+      seekToVerse(targetIndex);
     }
 
-    if (initialAutoplayRef.current) {
-      initialAutoplayRef.current = false; // consume
-      // Small delay lets seekToVerse's state update settle before play() runs
-      const t = window.setTimeout(() => { play(); }, 150);
+    if (shouldAutoplay) {
+      // Pass the index directly to startFrom so it cannot be wrong, regardless
+      // of what currentVerseIndexRef holds at timeout time.
+      const idx = targetIndex ?? 0;
+      const t = window.setTimeout(() => { startFrom(idx); }, 50);
       return () => window.clearTimeout(t);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
