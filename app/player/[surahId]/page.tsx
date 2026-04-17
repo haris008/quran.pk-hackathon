@@ -1,8 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 
 import { PlayerBar } from '@/components/PlayerBar';
 import { SettingsDrawer } from '@/components/SettingsDrawer';
@@ -26,7 +26,10 @@ interface LastPosition {
 export default function PlayerPage() {
   const router = useRouter();
   const params = useParams<{ surahId: string }>();
+  const searchParams = useSearchParams();
   const surahId = Number(params?.surahId);
+  const shouldAutoplay = searchParams.get('autoplay') === '1';
+  const didAutoplayRef = useRef(false);
 
   const {
     chapters,
@@ -176,24 +179,29 @@ export default function PlayerPage() {
     };
   }, [canLoadSurah, loadSurah, recitationId, setError, surahId, translationId]);
 
-  /* Restore last verse position */
+  /* Restore last verse position; autoplay if navigated from a bookmark */
   useEffect(() => {
     if (!canLoadSurah || verses.length === 0) return;
 
     const raw = localStorage.getItem(LAST_POSITION_KEY);
-    if (!raw) return;
-
-    try {
-      const parsed = JSON.parse(raw) as LastPosition;
-      if (
-        parsed.surahId === surahId &&
-        parsed.verseIndex >= 0 &&
-        parsed.verseIndex < verses.length
-      ) {
-        seekToVerse(parsed.verseIndex);
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw) as LastPosition;
+        if (
+          parsed.surahId === surahId &&
+          parsed.verseIndex >= 0 &&
+          parsed.verseIndex < verses.length
+        ) {
+          seekToVerse(parsed.verseIndex);
+        }
+      } catch {
+        localStorage.removeItem(LAST_POSITION_KEY);
       }
-    } catch {
-      localStorage.removeItem(LAST_POSITION_KEY);
+    }
+
+    if (shouldAutoplay && !didAutoplayRef.current) {
+      didAutoplayRef.current = true;
+      play();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canLoadSurah, surahId, verses.length]);
@@ -373,13 +381,11 @@ export default function PlayerPage() {
       {/* ── Controls toolbar ── */}
       <section className="sticky top-24 z-[80] h-10 border-b border-border bg-bg-surface px-5">
         <div className="mx-auto flex h-full w-full max-w-[1400px] items-center gap-2.5">
-          <button
-            type="button"
-            onClick={() => { if (!isPlaying) play(); }}
-            className="rounded-md border border-border px-3 py-1 text-xs text-text-secondary transition hover:border-border-hover hover:text-text-primary"
-          >
+          <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted select-none">
             Listen
-          </button>
+          </span>
+
+          <div className="mx-1 h-3.5 w-px bg-border" />
 
           <button
             type="button"
