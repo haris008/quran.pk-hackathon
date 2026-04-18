@@ -22,6 +22,8 @@ const SESSION_EXPIRED_EVENT = 'qf-session-expired';
 interface LastPosition {
   surahId: number;
   verseIndex: number;
+  verseNumber?: number;
+  verseKey?: string;
 }
 
 export default function PlayerPage() {
@@ -146,13 +148,27 @@ export default function PlayerPage() {
     setPlaybackSpeed,
     play,
     pause,
-    startFrom,
     seekToVerse,
     nextVerse,
     previousVerse,
     restartSurah,
   } = usePlayer({
     verses,
+    initialVerseIndex:
+      initialPositionRef.current?.surahId === surahId
+        ? initialPositionRef.current?.verseIndex
+        : undefined,
+    initialVerseNumber:
+      initialPositionRef.current?.surahId === surahId &&
+      typeof initialPositionRef.current?.verseNumber === 'number'
+        ? initialPositionRef.current?.verseNumber
+        : undefined,
+    initialVerseKey:
+      initialPositionRef.current?.surahId === surahId &&
+      typeof initialPositionRef.current?.verseKey === 'string'
+        ? initialPositionRef.current?.verseKey
+        : undefined,
+    autoplay: initialAutoplayRef.current,
     translationLang: selectedTranslation?.language_name,
     onVerseCompleted: (verse) => {
       // Log each verse completion to Quran Foundation User API (fire-and-forget)
@@ -196,58 +212,32 @@ export default function PlayerPage() {
     };
   }, [canLoadSurah, loadSurah, recitationId, setError, surahId, translationId]);
 
-  /* Restore last verse position; autoplay if navigated from a bookmark.
-     Both values were captured into refs on mount so they are immune to the
-     persist-position effect overwriting localStorage while data is loading.
-     We call startFrom(targetIndex) directly — passing the index explicitly —
-     so there is no race where currentVerseIndexRef gets reset between seekToVerse
-     and a delayed play() call. */
-  useEffect(() => {
-    if (!canLoadSurah || verses.length === 0) return;
-
-    // Consume both flags immediately so re-runs of this effect are no-ops.
-    const pos = initialPositionRef.current;
-    const shouldAutoplay = initialAutoplayRef.current;
-    initialPositionRef.current = null;
-    initialAutoplayRef.current = false;
-
-    const targetIndex =
-      pos && pos.surahId === surahId && pos.verseIndex >= 0 && pos.verseIndex < verses.length
-        ? pos.verseIndex
-        : null;
-
-    if (targetIndex !== null && !shouldAutoplay) {
-      // Bookmark restored without autoplay — just scroll to the verse
-      seekToVerse(targetIndex);
-    }
-
-    if (shouldAutoplay) {
-      // Pass the index directly to startFrom so it cannot be wrong, regardless
-      // of what currentVerseIndexRef holds at timeout time.
-      const idx = targetIndex ?? 0;
-      const t = window.setTimeout(() => { startFrom(idx); }, 50);
-      return () => window.clearTimeout(t);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canLoadSurah, surahId, verses.length]);
-
   /* Persist current position */
   useEffect(() => {
     if (!canLoadSurah || verses.length === 0) return;
 
+    const verse = verses[currentVerseIndex];
     localStorage.setItem(
       LAST_POSITION_KEY,
-      JSON.stringify({ surahId, verseIndex: currentVerseIndex })
+      JSON.stringify({
+        surahId,
+        verseIndex: currentVerseIndex,
+        verseNumber: verse?.verseNumber,
+        verseKey: verse?.verseKey,
+      })
     );
   }, [canLoadSurah, currentVerseIndex, surahId, verses.length]);
 
 
   /* Auto-scroll active verse into view */
   useEffect(() => {
+    const verseKey = verses[currentVerseIndex]?.verseKey;
+    if (!verseKey) return;
+
     document
-      .getElementById(`verse-${currentVerseIndex}`)
+      .querySelector<HTMLElement>(`[data-verse-key="${verseKey}"]`)
       ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, [currentTrack, currentVerseIndex]);
+  }, [currentTrack, currentVerseIndex, verses]);
 
   /* Keyboard shortcuts */
   useEffect(() => {

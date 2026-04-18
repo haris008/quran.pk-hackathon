@@ -23,6 +23,10 @@ const LANG_BCP47: Record<string, string> = {
 
 interface UsePlayerOptions {
   verses: Verse[];
+  initialVerseIndex?: number;
+  initialVerseNumber?: number;
+  initialVerseKey?: string;
+  autoplay?: boolean;
   translationLang?: string;
   onVerseChange?: (index: number) => void;
   onVerseCompleted?: (verse: Verse) => void;
@@ -32,7 +36,18 @@ interface UsePlayerOptions {
 
 type AudioWaitStatus = 'ended' | 'error' | 'interrupted';
 
-export function usePlayer({ verses, translationLang = 'english', onVerseChange, onVerseCompleted, onSurahComplete, onSessionStart }: UsePlayerOptions) {
+export function usePlayer({
+  verses,
+  initialVerseIndex,
+  initialVerseNumber,
+  initialVerseKey,
+  autoplay = false,
+  translationLang = 'english',
+  onVerseChange,
+  onVerseCompleted,
+  onSurahComplete,
+  onSessionStart
+}: UsePlayerOptions) {
   const [currentVerseIndex, setCurrentVerseIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playMode, setPlayMode] = useState<PlayMode>('both');
@@ -53,6 +68,8 @@ export function usePlayer({ verses, translationLang = 'english', onVerseChange, 
   const playbackSpeedRef = useRef(1);
   const versesRef = useRef(verses);
   const currentVerseIndexRef = useRef(0);
+  const hasAppliedInitialPositionRef = useRef(false);
+  const lastVersesSignatureRef = useRef<string | null>(null);
 
   useEffect(() => {
     arabicAudioRef.current = new Audio();
@@ -91,6 +108,27 @@ export function usePlayer({ verses, translationLang = 'english', onVerseChange, 
   }, []);
 
   useEffect(() => {
+    const signature =
+      verses.length === 0
+        ? null
+        : verses
+            .map((verse) =>
+              [
+                verse.verseKey,
+                verse.arabicAudioUrl,
+                verse.translationAudioUrl,
+                verse.englishText ?? '',
+              ].join('|')
+            )
+            .join('||');
+
+    // In React Strict Mode (dev), the same loaded verses can be set twice.
+    // Ignore exact duplicates so we do not reset playback back to verse 0.
+    if (signature !== null && signature === lastVersesSignatureRef.current) {
+      return;
+    }
+
+    lastVersesSignatureRef.current = signature;
     versesRef.current = verses;
     runIdRef.current += 1;
     isPlayingRef.current = false;
@@ -112,6 +150,45 @@ export function usePlayer({ verses, translationLang = 'english', onVerseChange, 
       translationAudio.pause();
       translationAudio.currentTime = 0;
     }
+
+    if (
+      !hasAppliedInitialPositionRef.current &&
+      verses.length > 0
+    ) {
+      let nextIndex: number | null = null;
+
+      if (typeof initialVerseKey === 'string' && initialVerseKey.length > 0) {
+        const byKey = verses.findIndex((verse) => verse.verseKey === initialVerseKey);
+        if (byKey >= 0) {
+          nextIndex = byKey;
+        }
+      }
+
+      if (nextIndex === null && typeof initialVerseNumber === 'number') {
+        const byVerseNumber = verses.findIndex((verse) => verse.verseNumber === initialVerseNumber);
+        if (byVerseNumber >= 0) {
+          nextIndex = byVerseNumber;
+        }
+      }
+
+      if (nextIndex === null && typeof initialVerseIndex === 'number') {
+        nextIndex = clampIndex(initialVerseIndex, verses.length);
+      }
+
+      if (nextIndex === null) {
+        return;
+      }
+
+      hasAppliedInitialPositionRef.current = true;
+      if (autoplay) {
+        startFrom(nextIndex);
+      } else {
+        setCurrentVerseIndex(nextIndex);
+        currentVerseIndexRef.current = nextIndex;
+        onVerseChange?.(nextIndex);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [verses]);
 
   useEffect(() => {

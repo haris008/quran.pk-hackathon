@@ -68,6 +68,7 @@ export function VerseCard({
   return (
     <article
       id={`verse-${index}`}
+      data-verse-key={verse.verseKey}
       className={`border-b border-border px-6 py-6 transition-all ${getStateClasses(active, track, completed)}`}
     >
       {/* ── Toolbar row ── */}

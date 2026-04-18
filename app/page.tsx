@@ -16,6 +16,8 @@ const SESSION_EXPIRED_EVENT = 'qf-session-expired';
 interface LastPosition {
   surahId: number;
   verseIndex: number;
+  verseNumber?: number;
+  verseKey?: string;
 }
 
 interface BookmarkChip {
@@ -34,6 +36,8 @@ export default function HomePage() {
   const [bookmarkKeys, setBookmarkKeys] = useState<string[]>([]);
   const [bookmarkChips, setBookmarkChips] = useState<BookmarkChip[]>([]);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const resumeVerseNumber =
+    typeof lastPosition?.verseNumber === 'number' ? lastPosition.verseNumber : (lastPosition?.verseIndex ?? 0) + 1;
 
   const applyLoggedOutState = useCallback(() => {
     setUserEmail(null);
@@ -215,7 +219,7 @@ export default function HomePage() {
           <section className="mx-auto mb-4 w-full max-w-6xl px-4">
             <div className="flex items-center justify-between rounded-lg border border-teal-border bg-teal-dim p-3 text-sm text-text-primary">
               <span>
-                Resume Surah {lastPosition.surahId}, verse {lastPosition.verseIndex + 1}
+                Resume Surah {lastPosition.surahId}, verse {resumeVerseNumber}
               </span>
               <button
                 type="button"
@@ -240,7 +244,12 @@ export default function HomePage() {
                   onClick={() => {
                     localStorage.setItem(
                       LAST_POSITION_KEY,
-                      JSON.stringify({ surahId: chip.surahId, verseIndex: chip.verseNumber - 1 }),
+                      JSON.stringify({
+                        surahId: chip.surahId,
+                        verseIndex: chip.verseNumber - 1,
+                        verseNumber: chip.verseNumber,
+                        verseKey: chip.verseKey,
+                      }),
                     );
                     localStorage.setItem('bilingual_radio_autoplay', '1');
                     router.push(`/player/${chip.surahId}`);

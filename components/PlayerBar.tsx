@@ -47,7 +47,12 @@ export function PlayerBar({
     if (verse?.pageNumber) loadQcfFont(verse.pageNumber);
   }, [verse?.pageNumber]);
 
-  const progress = totalVerses === 0 ? 0 : ((currentVerseIndex + 1) / totalVerses) * 100;
+  const displayedVerseNumber =
+    totalVerses === 0
+      ? 0
+      : Math.min(Math.max(verse?.verseNumber ?? (currentVerseIndex + 1), 1), totalVerses);
+
+  const progress = totalVerses === 0 ? 0 : (displayedVerseNumber / totalVerses) * 100;
   const progressColor = currentTrack === 'translation' ? 'var(--blue-active)' : 'var(--teal)';
 
   const activeTagClass = currentTrack === 'translation'
@@ -111,7 +116,7 @@ export function PlayerBar({
         </div>
 
         <div className="flex items-center gap-2 text-xs text-text-muted">
-          <span>{Math.min(currentVerseIndex + 1, totalVerses || 1)}/{totalVerses || 0}</span>
+          <span>{displayedVerseNumber}/{totalVerses || 0}</span>
         </div>
 
         <div className="flex items-center gap-2">
