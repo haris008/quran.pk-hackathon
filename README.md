@@ -36,7 +36,7 @@ Quran.com serves **millions of Muslims daily**, yet a first-time visitor has no 
 
 - **Tell users who the reciters actually are** — Most visitors have no idea that Sheikh Abdul Rahman Al-Sudais is not just a reciter on the internet — he is the **Imam and President of Masjid al-Haram**, the Grand Mosque in Makkah, the holiest site in Islam. That single fact transforms how a user perceives every word they are listening to. These credentials should be prominently displayed, not hidden.
 
-This is the gap this app's [/about](/about) page is designed to address — and what I believe quran.com should build at scale to unlock its true impact on the global Muslim community.
+This is the gap this app's [/about](https://quran-pk.netlify.app/about) page is designed to address — and what I believe quran.com should build at scale to unlock its true impact on the global Muslim community.
 
 ---
 
